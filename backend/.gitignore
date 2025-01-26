@@ -1,0 +1,40 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+
+# Environment variables
+.env
+
+# Build outputs
+dist/
+build/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+*.pid
+
+# Testing and coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.log
+
+# Ignore service account key file
+serviceAccountKey.json
+config/serviceAccountKey.json
+
