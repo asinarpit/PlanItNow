@@ -43,8 +43,8 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
         <h2 className="text-2xl font-bold text-center mb-4">Log In</h2>
         <form onSubmit={handleLogin}>
           <input
@@ -53,7 +53,7 @@ const LoginPage = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full p-2 mb-4 border rounded-md"
+            className="w-full p-2 mb-4 border dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-900"
           />
           <div className="relative mb-4">
             <input
@@ -64,7 +64,7 @@ const LoginPage = () => {
                 setPassword(e.target.value);
               }}
               required
-              className="w-full p-2 mb-4 border rounded-md"
+              className="w-full p-2 mb-4 border dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-900"
             />
             <span
               className="absolute right-3 top-3 cursor-pointer"
@@ -77,7 +77,7 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full p-2 bg-blue-500 text-white rounded-md"
+            className="w-full p-2 bg-teal-600 text-gray-100 rounded-md"
           >
             {loading ? "Logging In..." : "Log In"}
           </button>

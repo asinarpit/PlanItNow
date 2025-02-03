@@ -1,12 +1,15 @@
 import React from "react";
+import Skeleton from "react-loading-skeleton";
 
 const EventCardSkeleton = () => {
   return (
-    <div className="border border-gray-300 rounded-lg p-4 shadow-md animate-pulse">
-      <div className="bg-gray-300 h-48 w-full mb-4 rounded-md"></div>
-      <div className="bg-gray-200 h-6 w-3/4 mb-2"></div>
-      <div className="bg-gray-200 h-4 w-1/2 mb-4"></div>
-      <div className="bg-gray-200 h-4 w-1/3"></div>
+    <div className="bg-white dark:bg-gray-800 rounded-sm p-4 shadow-md">
+      <Skeleton height={150} />
+          <div className="p-4">
+            <Skeleton width="60%" />
+            <Skeleton count={4} className="mt-2" width={"40%"} />
+            <Skeleton height={30} width="100%" className="mt-4" />
+          </div>
     </div>
   );
 };

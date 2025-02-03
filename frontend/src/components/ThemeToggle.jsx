@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { FiSun, FiMoon } from "react-icons/fi";
 
 const ThemeToggle = () => {
-  const [theme, setTheme] = useState(
-    localStorage.getItem("theme") || "light"
-  );
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
   useEffect(() => {
     if (theme === "dark") {
@@ -21,9 +20,9 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-white rounded"
+      className="p-2 bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded"
     >
-      Toggle Theme
+      {theme === "light" ? <FiSun /> : <FiMoon />}
     </button>
   );
 };

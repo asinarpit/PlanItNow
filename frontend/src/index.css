@@ -3,23 +3,70 @@
 @tailwind utilities;
 
 
-
-body{
-  @apply overflow-x-hidden bg-gray-100
+html{
+  @apply scroll-smooth
 }
 
+body {
+  @apply overflow-x-hidden scroll-smooth bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-300;
+}
+
+/* Loader Styling */
 .loader {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-left-color: #3498db;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #3498db;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
-  
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  
+}
+
+/* Scrollbar Styling for Light Mode */
+body {
+  scrollbar-color: #d1d5db #f3f4f6; /* thumb and track colors */
+}
+
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-track {
+  background-color: #f3f4f6; /* Light mode track color */
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: #d1d5db; /* Light mode thumb color */
+  border-radius: 4px;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background-color: #a0aec0; /* Darker thumb color on hover for light mode */
+}
+
+/* Scrollbar Styling for Dark Mode */
+body.dark {
+  scrollbar-color: #4a5568 #2d3748; /* thumb and track colors */
+}
+
+body.dark::-webkit-scrollbar {
+  width: 8px;
+}
+
+body.dark::-webkit-scrollbar-track {
+  background-color: #2d3748; /* Dark mode track color */
+}
+
+body.dark::-webkit-scrollbar-thumb {
+  background-color: #4a5568; /* Dark mode thumb color */
+  border-radius: 4px;
+}
+
+body.dark::-webkit-scrollbar-thumb:hover {
+  background-color: #2d3748; /* Darker thumb color on hover for dark mode */
+}

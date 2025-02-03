@@ -14,6 +14,7 @@ const {
   featureEvent,
   toggleRegistration,
   checkRegistrationStatus,
+  getEventsByUser,
 } = require("../controllers/eventController");
 const {
   authenticateUser,
@@ -27,6 +28,7 @@ router.get("/upcoming", getUpcomingEvents);
 router.get("/featured", getFeaturedEvents);
 router.get("/category/:category", getCategoryEvents);
 router.get("/", getAllEvents);
+router.get("/user/events", authenticateUser, authorizeRoles("admin", "faculty"), getEventsByUser);
 router.get("/:id", getEventById);
 router.patch("/:id/feature", authenticateUser, featureEvent);
 router.post(

@@ -13,6 +13,30 @@ exports.getAllEvents = async (req, res) => {
   }
 };
 
+// Fetch all events created by a specific user
+exports.getEventsByUser = async (req, res) => {
+  const userId = req.user.id;
+
+  if (!req.user) {
+    return res.status(401).json({ message: "User not authenticated" });
+  }
+
+  try {
+    const events = await Event.find({ createdBy: userId })
+      .populate("participants")
+      .populate("createdBy");
+
+    if (events.length === 0) {
+      return res.status(404).json({ message: "No events found for this user" });
+    }
+
+    res.status(200).json(events); 
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
 // Get a single event
 exports.getEventById = async (req, res) => {
   try {
@@ -217,11 +241,9 @@ exports.featureEvent = async (req, res) => {
   const { isFeatured } = req.body;
 
   if (typeof isFeatured !== "boolean") {
-    return res
-      .status(400)
-      .json({
-        message: "Invalid value for 'isFeatured'. It must be a boolean.",
-      });
+    return res.status(400).json({
+      message: "Invalid value for 'isFeatured'. It must be a boolean.",
+    });
   }
 
   if (!req.user) {
@@ -245,7 +267,6 @@ exports.featureEvent = async (req, res) => {
   }
 };
 
-
 // Register or unregister a student for an event
 exports.toggleRegistration = async (req, res) => {
   const { id } = req.params;
@@ -260,7 +281,7 @@ exports.toggleRegistration = async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    
+
     if (!event.participants.includes(req.user.id)) {
       if (event.participants.length >= event.capacity) {
         return res
@@ -317,8 +338,6 @@ exports.checkRegistrationStatus = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
-
 
 // Delete an event
 exports.deleteEvent = async (req, res) => {

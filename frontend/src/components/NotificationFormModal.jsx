@@ -1,6 +1,6 @@
 import React from "react";
 
-const NotificationModal = ({
+const NotificationFormModal = ({
     isOpen,
     onClose,
     onSendNotification,
@@ -14,25 +14,25 @@ const NotificationModal = ({
 
     return (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-500 bg-opacity-75 z-50">
-            <div className="bg-white p-6 rounded-lg w-1/2">
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg w-1/2">
                 <h3 className="text-xl font-bold mb-4">Send Notification</h3>
                 <input
                     type="text"
                     placeholder="Notification Title"
                     value={notificationTitle}
                     onChange={(e) => setNotificationTitle(e.target.value)}
-                    className="border rounded px-4 py-2 w-full mb-2"
+                    className="border dark:border-gray-700 dark:bg-gray-800 rounded px-4 py-2 w-full mb-2"
                 />
                 <textarea
                     placeholder="Notification Body"
                     value={notificationBody}
                     onChange={(e) => setNotificationBody(e.target.value)}
-                    className="border rounded px-4 py-2 w-full mb-4"
+                    className="border dark:border-gray-700 dark:bg-gray-800 rounded px-4 py-2 w-full mb-4"
                 />
                 <div className="flex justify-between">
                     <button
                         onClick={onClose}
-                        className="bg-gray-500 text-white px-4 py-2 rounded"
+                        className="border  border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-gray-100 px-4 py-2 rounded text-sm"
                     >
                         Close
                     </button>
@@ -41,7 +41,7 @@ const NotificationModal = ({
                             onSendNotification(notificationType);
                             onClose();
                         }}
-                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                        className="bg-teal-600 hover:bg-teal-700 text-gray-100 px-4 py-2 rounded text-sm"
                     >
                         Send Notification
                     </button>
@@ -51,4 +51,4 @@ const NotificationModal = ({
     );
 };
 
-export default NotificationModal;
+export default NotificationFormModal;

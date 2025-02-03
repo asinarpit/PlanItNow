@@ -99,7 +99,7 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
       )}
       <form
         onSubmit={handleSubmit}
-        className={`bg-white p-6 rounded-lg shadow w-11/12 sm:w-96 ${loading && "opacity-50"}`}
+        className={`bg-white dark:bg-gray-900 p-6 rounded-lg shadow w-11/12 sm:w-96 ${loading && "opacity-50"}`}
         encType="multipart/form-data"
       >
         <h2 className="text-2xl font-bold mb-4">
@@ -113,7 +113,7 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
               required
               disabled={loading}
             />
@@ -125,7 +125,7 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
               name="location"
               value={formData.location}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
               required
               disabled={loading}
             />
@@ -137,7 +137,7 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
               name="date"
               value={formData.date}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
               required
               disabled={loading}
             />
@@ -148,7 +148,7 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
               required
               disabled={loading}
             >
@@ -169,7 +169,7 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
               name="capacity"
               value={formData.capacity}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
               required
               disabled={loading}
             />
@@ -180,7 +180,7 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
               disabled={loading}
             >
               <option value="pending">Pending</option>
@@ -195,7 +195,7 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
             name="description"
             value={formData.description}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
             required
             disabled={loading}
           />
@@ -207,7 +207,7 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
             name="image"
             accept="image/*"
             onChange={handleChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
             disabled={loading}
           />
         </div>
@@ -216,18 +216,18 @@ const EventFormModal = ({ isOpen, setIsOpen, currentEvent }) => {
             <p>Selected Image: {formData.image.name}</p>
           </div>
         )}
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-between space-x-4">
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            className="border border-teal-600 text-teal-600 px-4 py-2 rounded hover:bg-teal-600 hover:text-gray-100"
             disabled={loading}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
             disabled={loading}
           >
             Save

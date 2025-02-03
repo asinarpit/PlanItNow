@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, NavLink } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
@@ -22,48 +22,63 @@ const Navbar = () => {
         "/dashboard/faculty")) : null;
 
   return (
-    <nav className="bg-blue-500 dark:bg-blue-800 text-white dark:text-gray-200 px-4 py-3 flex justify-between items-center">
+    <nav className="sticky top-0 w-full z-50 bg-white dark:bg-gray-900 px-4 py-3 flex justify-between items-center shadow-md">
       <div className="flex items-center">
-        <Link to="/" className="text-xl font-bold">
-          PlanItNow
+        <Link to="/" className="text-xl font-semibold">
+          Plan<span className="font-bold text-teal-600">It</span>Now
         </Link>
       </div>
-      <div className="flex items-center gap-4">
-        <Link to="/" className="hover:underline">
+      <div className="flex items-center gap-4 text-sm">
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            isActive ? "text-teal-600 font-semibold" : "hover:text-teal-600"
+          }
+        >
           Home
-        </Link>
-        <Link to="/about" className="hover:underline">
+        </NavLink>
+        <NavLink
+          to="/about"
+          className={({ isActive }) =>
+            isActive ? "text-teal-600 font-semibold" : "hover:text-teal-600"
+          }
+        >
           About
-        </Link>
+        </NavLink>
+        {user && (
+          <NavLink
+            to={dashboardLink}
+            className={({ isActive }) =>
+              isActive ? "text-teal-600 font-semibold" : "hover:text-teal-600"
+            }
+          >
+            Dashboard
+          </NavLink>
+        )}
         {user ? (
-          <>
-            <Link to={dashboardLink} className="hover:underline">
-              Dashboard
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 dark:bg-red-700 px-3 py-1 rounded-md hover:bg-red-600 dark:hover:bg-red-800"
-            >
-              Logout
-            </button>
-          </>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 dark:bg-red-700 px-3 py-1 rounded-md hover:bg-red-600 dark:hover:bg-red-800 text-gray-100"
+          >
+            Logout
+          </button>
         ) : (
           <>
             <Link
               to="/login"
-              className="bg-gray-800 dark:bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-900 dark:hover:bg-gray-600"
+              className="bg-teal-600 font-semibold text-gray-100 px-3 py-1 rounded-md hover:bg-teal-700"
             >
               Login
             </Link>
             <Link
               to="/signup"
-              className="bg-gray-800 dark:bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-900 dark:hover:bg-gray-600"
+              className="border text-teal-600 font-semibold border-teal-600 px-3 py-1 rounded-md hover:bg-teal-600 hover:text-white"
             >
               Sign Up
             </Link>
-            <ThemeToggle />
           </>
         )}
+        <ThemeToggle />
       </div>
     </nav>
   );

@@ -39,7 +39,7 @@ const EventCard = ({ event }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-sm shadow-md overflow-hidden">
       <img
         className="w-full h-48 object-cover"
         src={event.image || "https://placehold.co/400"}
@@ -47,8 +47,8 @@ const EventCard = ({ event }) => {
       />
       <div className="p-4">
         <h3 className="text-xl font-semibold text-gray-800">{event.title}</h3>
-        <p className="text-sm text-gray-600 mt-2">{event.description}</p>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm mt-2">{event.description}</p>
+        <p className="text-sm mt-2">
           <strong>Date:</strong>{" "}
           {new Date(event.date).toLocaleDateString("en-GB", {
             day: "2-digit",
@@ -56,19 +56,19 @@ const EventCard = ({ event }) => {
             year: "numeric",
           })}
         </p>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm mt-2">
           <strong>Location:</strong> {event.location}
         </p>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm mt-2">
           <strong>Category:</strong> {event.category}
         </p>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm mt-2">
           <strong>Capacity:</strong> {event.capacity}
         </p>
         <button
           className={`mt-4 w-full ${
-            isRegistered ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
-          } text-white py-2 px-4 rounded-lg transition`}
+            isRegistered ? "border border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-gray-100" : "bg-teal-600 hover:bg-teal-700 text-gray-100 "
+          }  py-2 px-4 rounded-sm transition`}
           onClick={handleToggleRegistration}
           disabled={loading}
         >

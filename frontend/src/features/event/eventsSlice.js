@@ -9,47 +9,73 @@ export const fetchEvents = createAsyncThunk("events/fetchEvents", async () => {
   return response.data;
 });
 
+// Fetch events created by the logged-in user
+export const fetchUserEvents = createAsyncThunk(
+  "events/fetchUserEvents",
+  async (_, { getState }) => {
+    const state = getState();
+    const token = state.auth.token;
+
+    const response = await axios.get(`${BASE_URL}/events/user/events`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  }
+);
+
 // Create an event
-export const createEvent = createAsyncThunk("events/createEvent", async (eventData, { getState }) => {
-  const state = getState();
-  const token = state.auth.token;
+export const createEvent = createAsyncThunk(
+  "events/createEvent",
+  async (eventData, { getState }) => {
+    const state = getState();
+    const token = state.auth.token;
 
-  const response = await axios.post(`${BASE_URL}/events`, eventData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+    const response = await axios.post(`${BASE_URL}/events`, eventData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  return response.data;
-});
+    return response.data;
+  }
+);
 
 // Update an event
-export const updateEvent = createAsyncThunk("events/updateEvent", async ({ id, updatedData }, { getState }) => {
-  const state = getState();
-  const token = state.auth.token;
+export const updateEvent = createAsyncThunk(
+  "events/updateEvent",
+  async ({ id, updatedData }, { getState }) => {
+    const state = getState();
+    const token = state.auth.token;
 
-  const response = await axios.put(`${BASE_URL}/events/${id}`, updatedData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+    const response = await axios.put(`${BASE_URL}/events/${id}`, updatedData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  return response.data;
-});
+    return response.data;
+  }
+);
 
 // Delete an event
-export const deleteEvent = createAsyncThunk("events/deleteEvent", async (id, { getState }) => {
-  const state = getState();
-  const token = state.auth.token;
+export const deleteEvent = createAsyncThunk(
+  "events/deleteEvent",
+  async (id, { getState }) => {
+    const state = getState();
+    const token = state.auth.token;
 
-  await axios.delete(`${BASE_URL}/events/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+    await axios.delete(`${BASE_URL}/events/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  return id;
-});
+    return id;
+  }
+);
 
 // Update event status
 export const updateEventStatus = createAsyncThunk(
@@ -93,8 +119,6 @@ export const toggleFeatureEvent = createAsyncThunk(
   }
 );
 
-
-
 const eventsSlice = createSlice({
   name: "events",
   initialState: { events: [], loading: false, error: null },
@@ -112,23 +136,43 @@ const eventsSlice = createSlice({
         state.loading = false;
         state.error = action.error.message;
       })
+      .addCase(fetchUserEvents.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchUserEvents.fulfilled, (state, action) => {
+        state.loading = false;
+        state.events = action.payload;
+      })
+      .addCase(fetchUserEvents.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
       .addCase(createEvent.fulfilled, (state, action) => {
         state.events.push(action.payload);
       })
       .addCase(updateEvent.fulfilled, (state, action) => {
-        const index = state.events.findIndex((event) => event._id === action.payload._id);
+        const index = state.events.findIndex(
+          (event) => event._id === action.payload._id
+        );
         if (index !== -1) state.events[index] = action.payload;
       })
       .addCase(deleteEvent.fulfilled, (state, action) => {
-        state.events = state.events.filter((event) => event._id !== action.payload);
+        state.events = state.events.filter(
+          (event) => event._id !== action.payload
+        );
       })
       .addCase(updateEventStatus.fulfilled, (state, action) => {
-        const index = state.events.findIndex((event) => event._id === action.payload._id);
+        const index = state.events.findIndex(
+          (event) => event._id === action.payload._id
+        );
         if (index !== -1) state.events[index].status = action.payload.status;
       })
       .addCase(toggleFeatureEvent.fulfilled, (state, action) => {
-        const index = state.events.findIndex((event) => event._id === action.payload._id);
-        if (index !== -1) state.events[index].isFeatured = action.payload.isFeatured;
+        const index = state.events.findIndex(
+          (event) => event._id === action.payload._id
+        );
+        if (index !== -1)
+          state.events[index].isFeatured = action.payload.isFeatured;
       });
   },
 });

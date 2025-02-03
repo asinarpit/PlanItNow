@@ -6,8 +6,9 @@ const authRoutes = require("./routes/authRoutes");
 const eventRoutes = require("./routes/eventRoutes")
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
-const firebaseRoutes = require('./routes/firebaseRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const userRoutes = require("./routes/userRoutes");
+require("./jobs/deleteOldNotifications");
 
 dotenv.config();
 connectDB();
@@ -21,7 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/firebase", firebaseRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/user", userRoutes);
 
 const PORT = process.env.PORT || 5000;
