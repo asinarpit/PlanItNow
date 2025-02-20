@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { signupUser } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -111,8 +111,9 @@ const SignupPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full p-2 bg-teal-600 text-white rounded-md"
+            className="w-full p-2 bg-teal-600 text-white rounded-md flex items-center justify-center gap-2"
           >
+            {loading && <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin" />}
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>

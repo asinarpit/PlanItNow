@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate, NavLink } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../features/auth/authSlice";
+import { logout, removeDeviceToken } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
 import ThemeToggle from "./ThemeToggle";
 
@@ -11,7 +11,9 @@ const Navbar = () => {
   const dispatch = useDispatch();
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(removeDeviceToken()).then(() => {
+      dispatch(logout());
+    });
     toast.success("Logged out successfully!");
     navigate("/login");
   };

@@ -1,5 +1,5 @@
 const express = require("express");
-const { getDashboardStats } = require("../controllers/dashboardController");
+const {getAdminDashboardStats, getFacultyDashboardStats, getStudentDashboardStats } = require("../controllers/dashboardController");
 const {
   authenticateUser,
   authorizeRoles,
@@ -8,10 +8,26 @@ const {
 const router = express.Router();
 
 router.get(
-  "/stats",
+  "/stats/admin",
   authenticateUser,
   authorizeRoles("admin"),
-  getDashboardStats
+  getAdminDashboardStats
 );
+
+
+router.get(
+  "/stats/faculty",
+  authenticateUser,
+  authorizeRoles("faculty", "admin"),
+  getFacultyDashboardStats
+)
+
+
+router.get(
+  "/stats/student",
+  authenticateUser,
+  authorizeRoles("admin", "faculty", "student"),
+  getStudentDashboardStats
+)
 
 module.exports = router;

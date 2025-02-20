@@ -3,9 +3,9 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router";
 import { useSelector } from "react-redux";
 
-const FeedbackTable = () => {
+const FeedbacksPage = () => {
   const { eventId } = useParams();
-  const {token} = useSelector(state=>state.auth);
+  const { token } = useSelector(state => state.auth);
   const navigate = useNavigate();
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,18 +38,18 @@ const FeedbackTable = () => {
     <div className="p-6">
       <button
         onClick={() => navigate(-1)}
-        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+       className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 text-sm mb-4"
       >
         Go Back
       </button>
       <div className="overflow-x-auto shadow-md sm:rounded-lg">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
+        <table className="min-w-full table-auto dark:bg-gray-900">
+          <thead className="bg-teal-600 dark:bg-gray-900 text-gray-100 border-b dark:border-gray-700">
             <tr>
-              <th className="px-6 py-3">User</th>
-              <th className="px-6 py-3">Rating</th>
-              <th className="px-6 py-3">Comment</th>
-              <th className="px-6 py-3">Date</th>
+              <th className="py-3 px-6 text-left text-sm font-medium">User</th>
+              <th className="py-3 px-6 text-left text-sm font-medium">Rating</th>
+              <th className="py-3 px-6 text-left text-sm font-medium">Comment</th>
+              <th className="py-3 px-6 text-left text-sm font-medium">Date</th>
             </tr>
           </thead>
           <tbody>
@@ -65,10 +65,10 @@ const FeedbackTable = () => {
                   key={feedback._id}
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
-                  <td className="px-6 py-4">{feedback.userId.name}</td>
-                  <td className="px-6 py-4">{feedback.rating}</td>
-                  <td className="px-6 py-4">{feedback.comment}</td>
-                  <td className="px-6 py-4">
+                  <td className="py-3 px-6 text-sm">{feedback.userId.name}</td>
+                  <td className="py-3 px-6 text-sm">{feedback.rating}</td>
+                  <td className="py-3 px-6 text-sm">{feedback.comment}</td>
+                  <td className="py-3 px-6 text-sm">
                     {new Date(feedback.date).toLocaleString()}
                   </td>
                 </tr>
@@ -81,4 +81,4 @@ const FeedbackTable = () => {
   );
 };
 
-export default FeedbackTable;
+export default FeedbacksPage;

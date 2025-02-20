@@ -50,9 +50,31 @@ exports.getEventById = async (req, res) => {
   }
 };
 
+// Fetch events a student has registered for
+exports.getRegisteredEvents = async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "User not authenticated" });
+  }
+
+  try {
+    const events = await Event.find({ participants: req.user.id })
+      .populate("participants")
+      .populate("createdBy");
+
+    if (events.length === 0) {
+      return res.status(404).json({ message: "No registered events found" });
+    }
+
+    res.status(200).json(events);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
 // Create a new event
 exports.createEvent = async (req, res) => {
-  const { title, description, date, location, category, capacity, status } =
+  const { title, description, date, location, category, capacity } =
     req.body;
 
   console.log(req.user);
@@ -90,7 +112,6 @@ exports.createEvent = async (req, res) => {
       location,
       category,
       capacity,
-      status: status || "pending",
       createdBy,
       image: imageUrl,
     });
@@ -104,7 +125,7 @@ exports.createEvent = async (req, res) => {
 // Update an existing event
 exports.updateEvent = async (req, res) => {
   const { id } = req.params;
-  const { title, description, date, location, category, capacity, status } =
+  const { title, description, date, location, category, capacity} =
     req.body;
 
   if (!req.user) {
@@ -141,7 +162,6 @@ exports.updateEvent = async (req, res) => {
         location,
         category,
         capacity,
-        ...(status && { status }),
         ...(imageUrl && { image: imageUrl }),
       },
       { new: true }
@@ -343,12 +363,26 @@ exports.checkRegistrationStatus = async (req, res) => {
 exports.deleteEvent = async (req, res) => {
   const { id } = req.params;
 
+  if (!req.user) {
+    return res.status(401).json({ message: "User not authenticated" });
+  }
+
   try {
-    const deletedEvent = await Event.findByIdAndDelete(id);
-    if (!deletedEvent)
+    const event = await Event.findById(id);
+
+    if (!event) {
       return res.status(404).json({ message: "Event not found" });
+    }
+
+    
+    if (req.user.role !== "admin" && event.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Permission denied" });
+    }
+
+    await Event.findByIdAndDelete(id);
     res.status(200).json({ message: "Event deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
 };
+

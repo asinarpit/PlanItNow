@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import NotificationFormModal from "./NotificationFormModal";
+import NotificationFormModal from "../components/NotificationFormModal";
 import Skeleton from "react-loading-skeleton";
+import { RxCaretSort } from "react-icons/rx";
 
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const UsersTable = () => {
+const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,6 +21,7 @@ const UsersTable = () => {
   const [notificationType, setNotificationType] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: "date", order: "asc" });
 
 
   useEffect(() => {
@@ -127,12 +129,25 @@ const UsersTable = () => {
     setUserIdToDelete(null);
   };
 
+  const handleSort = (key) => {
+    setSortConfig((prevConfig) => ({
+      key,
+      order: prevConfig.key === key && prevConfig.order === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const order = sortConfig.order === "asc" ? 1 : -1;
+    return a[sortConfig.key] > b[sortConfig.key] ? order : -order;
+  });
+
 
   const handleSendNotification = async (type) => {
     try {
       if (type === "selected") {
         const recipients = filteredUsers.filter((user) => selectedUsers.includes(user._id));
-        const deviceTokens = recipients.map((user) => user.deviceToken);
+
+        const deviceTokens = recipients.flatMap((user) => user.deviceTokens || []);
 
         if (deviceTokens.length === 0) {
           toast.error("No users selected or no device tokens available");
@@ -194,7 +209,7 @@ const UsersTable = () => {
               placeholder="Search by email or name"
               value={searchQuery}
               onChange={handleSearchChange}
-              className="border dark:border-gray-700 rounded px-4 py-2 w-50 bg-white dark:bg-gray-900 text-sm"
+              className="border dark:border-gray-700 rounded px-4 py-2 w-50 bg-white dark:bg-gray-900 text-sm focus:ring-1 focus:ring-teal-600 focus:outline-none"
             />
           </div>
 
@@ -239,21 +254,31 @@ const UsersTable = () => {
               <thead className="bg-teal-600 dark:bg-gray-900 border-b dark:border-gray-700 text-gray-100">
                 <tr>
                   <th className="py-3 px-6 text-left text-sm font-medium">Select</th>
-                  <th className="py-3 px-6 text-left text-sm font-medium">UID</th>
-                  <th className="py-3 px-6 text-left text-sm font-medium">Email</th>
-                  <th className="py-3 px-6 text-left text-sm font-medium">Display Name</th>
-                  <th className="py-3 px-6 text-left text-sm font-medium">Role</th>
+                  {[
+                    { key: "_id", label: "UID" },
+                    { key: "email", label: "Email" },
+                    { key: "name", label: "Display Name" },
+                    { key: "role", label: "Role" },
+                  ].map(({ key, label }) => (
+                    <th key={key} className="py-3 px-6 text-sm font-medium cursor-pointer  hover:bg-teal-700" onClick={() => handleSort(key)}>
+                      <p className="flex items-center gap-2 justify-between">
+                        {label}
+                        <RxCaretSort size={20} />
+                      </p>
+                    </th>
+                  ))}
                   <th className="py-3 px-6 text-left text-sm font-medium">Actions</th>
+
                 </tr>
               </thead>
               <tbody>
                 {
                   loading ? (
                     <>
-                      {[...Array(5)].map((_, index) => (
+                      {[...Array(10)].map((_, index) => (
                         <tr key={index} className="border-b dark:border-gray-700">
                           <td className="p-3">
-                            <Skeleton height={50} width={50} circle />
+                            <Skeleton width={20} height={20} />
                           </td>
                           <td className="py-3 px-6 text-sm">
                             <Skeleton width={150} />
@@ -275,7 +300,7 @@ const UsersTable = () => {
                     </>
 
                   ) : (
-                    filteredUsers.map((user) => (
+                    sortedUsers.map((user) => (
                       <tr key={user._id} className="border-b dark:border-gray-700">
                         <td className="py-3 px-6 text-sm">
                           <input
@@ -349,4 +374,4 @@ const UsersTable = () => {
   );
 };
 
-export default UsersTable;
+export default UserManagementPage;

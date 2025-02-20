@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -74,13 +75,17 @@ const LoginPage = () => {
 
           </div>
 
+
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full p-2 bg-teal-600 text-gray-100 rounded-md"
+            className="w-full p-2 bg-teal-600 text-gray-100 rounded-md flex items-center justify-center gap-2"
           >
+            {loading && <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin" />}
             {loading ? "Logging In..." : "Log In"}
           </button>
+
         </form>
         <p className="mt-4 text-center">
           Don't have an account?{" "}

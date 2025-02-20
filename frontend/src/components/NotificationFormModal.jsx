@@ -13,7 +13,7 @@ const NotificationFormModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex justify-center items-center bg-gray-500 bg-opacity-75 z-50">
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg w-1/2">
                 <h3 className="text-xl font-bold mb-4">Send Notification</h3>
                 <input

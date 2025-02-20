@@ -1,7 +1,6 @@
-// src/components/DashboardLayout.js
 import React from "react";
 import { Outlet } from "react-router";
-import Sidebar from "./Sidebar"; // You can create this or use a pre-built component
+import Sidebar from "./Sidebar"; 
 import DashboardHeader from "./DashboardHeader";
 
 

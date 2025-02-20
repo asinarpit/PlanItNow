@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["student", "faculty", "admin"], default: "student" },
-    deviceToken: { type: String },
+    deviceTokens: [{ type: String }],
   },
   { timestamps: true }
 );

@@ -80,7 +80,19 @@ const Sidebar = () => {
               <span>My Events</span>
             </NavLink>
 
+
             <NavLink
+              to="/dashboard/faculty/notifications"
+              className={({ isActive }) =>
+                `p-2 rounded flex items-center space-x-2 ${isActive ? "bg-teal-600 text-gray-100" : "hover:text-teal-600"
+                }`
+              }
+            >
+              <IoIosNotifications className="text-lg" />
+              <span>Notifications</span>
+            </NavLink>
+
+            {/* <NavLink
               to="/dashboard/faculty/participants"
               className={({ isActive }) =>
                 `p-2 rounded flex items-center space-x-2 ${isActive ? "bg-teal-600 text-gray-100" : "hover:text-teal-600"
@@ -100,14 +112,14 @@ const Sidebar = () => {
             >
               <IoIosNotifications className="text-lg" />
               <span>Feedback</span>
-            </NavLink>
+            </NavLink> */}
           </>
         )}
 
         {/* Student Routes */}
         {role === "student" && (
           <>
-            <NavLink
+            {/* <NavLink
               to="/dashboard/student/events"
               className={({ isActive }) =>
                 `p-2 rounded-sm flex items-center space-x-2 ${isActive ? "bg-teal-600 text-gray-100" : "hover:text-teal-600"
@@ -116,7 +128,7 @@ const Sidebar = () => {
             >
               <FaCalendarAlt className="text-lg" />
               <span>View Events</span>
-            </NavLink>
+            </NavLink> */}
 
             <NavLink
               to="/dashboard/student/registered-events"

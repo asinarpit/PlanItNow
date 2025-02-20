@@ -12,7 +12,7 @@ const router = express.Router();
 router.get(
   "/event/:eventId",
   authenticateUser,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "faculty"),
   getFeedbackForEvent
 );
 

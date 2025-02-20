@@ -8,7 +8,7 @@ import HeroSection from "../components/HeroSection";
 
 const HomePage = () => {
   return (
-    <div className="min-h-screenpy-8">
+    <div className="min-h-screen">
       <div className="container mx-auto text-center">
         <HeroSection/>
         <NewEvents/>

@@ -15,6 +15,7 @@ const {
   toggleRegistration,
   checkRegistrationStatus,
   getEventsByUser,
+  getRegisteredEvents,
 } = require("../controllers/eventController");
 const {
   authenticateUser,
@@ -38,6 +39,8 @@ router.post(
   upload.single("image"),
   createEvent
 );
+router.get("/registered", authenticateUser, authorizeRoles("student"), getRegisteredEvents);
+
 router.put(
   "/:id",
   authenticateUser,
@@ -45,7 +48,7 @@ router.put(
   upload.single("image"),
   updateEvent
 );
-router.delete("/:id", authenticateUser, authorizeRoles("admin"), deleteEvent);
+router.delete("/:id", authenticateUser, authorizeRoles("admin", "faculty"), deleteEvent);
 router.post(
   "/:id/register",
   authenticateUser,

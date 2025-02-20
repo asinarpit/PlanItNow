@@ -16,7 +16,7 @@ const updateDeviceToken = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.deviceToken = deviceToken;
+    user.deviceTokens.addToSet(deviceToken);
     await user.save();
 
     res.status(200).json({ message: "Device token updated successfully" });
@@ -38,7 +38,7 @@ const signup = async (req, res) => {
       email,
       password,
       role,
-      deviceToken,
+      deviceTokens: deviceToken ? [deviceToken] : [],
     });
     if (user) {
       const token = generateToken(user._id, user.role);
@@ -47,7 +47,7 @@ const signup = async (req, res) => {
         role: user.role,
         name: user.name,
         email: user.email,
-        deviceToken: user.deviceToken,
+        deviceTokens: user.deviceTokens,
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -70,7 +70,7 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
 
     if (deviceToken) {
-      user.deviceToken = deviceToken;
+      user.deviceTokens.addToSet(deviceToken);
       await user.save();
     }
 
@@ -80,14 +80,12 @@ const login = async (req, res) => {
       role: user.role,
       name: user.name,
       email: user.email,
-      deviceToken: user.deviceToken,
+      deviceTokens: user.deviceTokens,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
-
 
 module.exports = {
   signup,

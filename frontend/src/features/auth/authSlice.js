@@ -8,7 +8,7 @@ const initialState = {
   token: null,
   email: null,
   role: null,
-  deviceToken: null, 
+  deviceToken: null,
   status: "idle",
   error: null,
 };
@@ -20,14 +20,14 @@ export const loginUser = createAsyncThunk(
       const response = await axios.post(`${BASE_URL}/auth/login`, {
         email,
         password,
-        deviceToken, 
+        deviceToken,
       });
       return {
         token: response.data.token,
         role: response.data.role,
         name: response.data.name,
         email: response.data.email,
-        deviceToken: response.data.deviceToken, 
+        deviceToken,
       };
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -44,15 +44,35 @@ export const signupUser = createAsyncThunk(
         email,
         password,
         role,
-        deviceToken, 
+        deviceToken,
       });
       return {
         token: response.data.token,
         role: response.data.role,
         name: response.data.name,
         email: response.data.email,
-        deviceToken: response.data.deviceToken, 
+        deviceToken,
       };
+    } catch (error) {
+      return rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+// API to remove the device token when the user logs out
+export const removeDeviceToken = createAsyncThunk(
+  "auth/removeDeviceToken",
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const { token, deviceToken } = state.auth;
+      if (!deviceToken) return;
+
+      const response = await axios.delete(`${BASE_URL}/user/remove-device-token`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { deviceToken },
+      });
+      return response.data; 
     } catch (error) {
       return rejectWithValue(error.response.data.message);
     }
@@ -66,6 +86,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.token = null;
+      state.email = null;
       state.role = null;
       state.deviceToken = null;
     },
@@ -84,7 +105,7 @@ const authSlice = createSlice({
         state.role = action.payload.role;
         state.user = action.payload.name;
         state.email = action.payload.email;
-        state.deviceToken = action.payload.deviceToken; 
+        state.deviceToken = action.payload.deviceToken;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
@@ -99,10 +120,16 @@ const authSlice = createSlice({
         state.role = action.payload.role;
         state.user = action.payload.name;
         state.email = action.payload.email;
-        state.deviceToken = action.payload.deviceToken; 
+        state.deviceToken = action.payload.deviceToken;
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.status = "failed";
+        state.error = action.payload;
+      })
+      .addCase(removeDeviceToken.fulfilled, (state) => {
+        state.deviceToken = null;
+      })
+      .addCase(removeDeviceToken.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

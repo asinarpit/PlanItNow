@@ -2,7 +2,7 @@ const Notification = require("../models/Notification");
 const User = require("../models/User");
 const sendNotification = require("../services/notificationService");
 
-// send notification to single or multiple users
+// Send notification to single or multiple users
 const sendNotificationToUsers = async (req, res) => {
   const { title, body, deviceTokens } = req.body;
 
@@ -20,17 +20,28 @@ const sendNotificationToUsers = async (req, res) => {
   const tokens = Array.isArray(deviceTokens) ? deviceTokens : [deviceTokens];
 
   try {
-    await sendNotification(title, body, tokens);
+    // Find users who have at least one of the provided tokens
+    const users = await User.find({ deviceTokens: { $in: tokens } }).select(
+      "_id deviceTokens"
+    );
+
+    if (users.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "No users found for the given device tokens" });
+    }
+
+    // Extract all device tokens from found users
+    const allTokens = users.flatMap((user) => user.deviceTokens);
+
+    await sendNotification(title, body, allTokens);
 
     // Save notification to the database
-    const recipients = await User.find({ deviceToken: { $in: tokens } }).select(
-      "_id"
-    );
     await Notification.create({
       title,
       body,
       type: "selected",
-      recipients: recipients.map((user) => user._id),
+      recipients: users.map((user) => user._id),
     });
 
     return res.status(200).json({
@@ -46,7 +57,7 @@ const sendNotificationToUsers = async (req, res) => {
   }
 };
 
-//send notification to all users
+// Send notification to all users
 const sendNotificationToAllUsers = async (req, res) => {
   const { title, body } = req.body;
 
@@ -55,10 +66,10 @@ const sendNotificationToAllUsers = async (req, res) => {
   }
 
   try {
-    const users = await User.find({});
-    const deviceTokens = users
-      .map((user) => user.deviceToken)
-      .filter((token) => token);
+    const users = await User.find({}).select("_id deviceTokens");
+
+    // Extract all device tokens
+    const deviceTokens = users.flatMap((user) => user.deviceTokens || []);
 
     if (deviceTokens.length === 0) {
       return res.status(400).json({ message: "No device tokens found" });
@@ -93,16 +104,15 @@ const getNotificationsForUser = async (req, res) => {
     const notifications = await Notification.find({
       recipients: userId,
     })
-      .select('title body createdAt readBy')  
+      .select("title body createdAt readBy")
       .sort({ createdAt: -1 });
 
-  
-    const modifiedNotifications = notifications.map(notification => {
+    const modifiedNotifications = notifications.map((notification) => {
       const isRead = notification.readBy.includes(userId);
       return {
-        ...notification.toObject(), 
-        isRead,                      
-        readBy: undefined,          
+        ...notification.toObject(),
+        isRead,
+        readBy: undefined,
       };
     });
 
@@ -112,10 +122,11 @@ const getNotificationsForUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching notifications:", error);
-    return res.status(500).json({ message: "Error fetching notifications", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error fetching notifications", error: error.message });
   }
 };
-
 
 // Mark a notification as read for a user
 const markNotificationAsRead = async (req, res) => {
@@ -130,17 +141,14 @@ const markNotificationAsRead = async (req, res) => {
     }
 
     if (!notification.recipients.includes(userId)) {
-      return res
-        .status(403)
-        .json({
-          message: "You are not authorized to mark this notification as read",
-        });
+      return res.status(403).json({
+        message: "You are not authorized to mark this notification as read",
+      });
     }
 
     if (!notification.readBy.includes(userId)) {
       notification.readBy.push(userId);
     }
-
 
     if (notification.readBy.length === notification.recipients.length) {
       await Notification.findByIdAndDelete(notificationId);
@@ -153,31 +161,32 @@ const markNotificationAsRead = async (req, res) => {
     return res.status(200).json({ message: "Notification marked as read" });
   } catch (error) {
     console.error("Error marking notification as read:", error);
-    return res
-      .status(500)
-      .json({
-        message: "Error marking notification as read",
-        error: error.message,
-      });
+    return res.status(500).json({
+      message: "Error marking notification as read",
+      error: error.message,
+    });
   }
 };
 
+// Mark all notifications as read for a user
 const markAllNotificationsAsRead = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const notifications = await Notification.find({ 
-      recipients: userId, 
-      readBy: { $ne: userId }
+    const notifications = await Notification.find({
+      recipients: userId,
+      readBy: { $ne: userId },
     });
 
     if (notifications.length === 0) {
-      return res.status(200).json({ message: "All notifications are already read" });
+      return res
+        .status(200)
+        .json({ message: "All notifications are already read" });
     }
 
     await Notification.updateMany(
       { recipients: userId, readBy: { $ne: userId } },
-      { $addToSet: { readBy: userId } } 
+      { $addToSet: { readBy: userId } }
     );
 
     await Notification.deleteMany({
@@ -185,7 +194,9 @@ const markAllNotificationsAsRead = async (req, res) => {
       $expr: { $eq: [{ $size: "$readBy" }, { $size: "$recipients" }] },
     });
 
-    return res.status(200).json({ message: "All notifications marked as read" });
+    return res
+      .status(200)
+      .json({ message: "All notifications marked as read" });
   } catch (error) {
     console.error("Error marking all notifications as read:", error);
     return res.status(500).json({
@@ -198,10 +209,12 @@ const markAllNotificationsAsRead = async (req, res) => {
 
 
 
+
+
 module.exports = {
   sendNotificationToUsers,
   sendNotificationToAllUsers,
   markNotificationAsRead,
   getNotificationsForUser,
-  markAllNotificationsAsRead,
+  markAllNotificationsAsRead
 };

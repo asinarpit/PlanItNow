@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import HomePage from "./pages/HomePage";
@@ -9,20 +8,23 @@ import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import AboutPage from "./pages/AboutPage";
-import DashboardOverview from "./components/DashboardOverview";
-import UsersTable from "./components/UsersTable";
-import EventManagement from "./components/EventManagement";
-import FeedbackTable from "./components/FeedbackTable";
-import ParticipantsTable from "./components/ParticipantsTable";
 import { setDeviceToken, logout } from "./features/auth/authSlice";
 import { useDispatch } from "react-redux";
 import { getDeviceToken } from "./utils/firebaseUtils";
 import NotificationToast from "./components/NotificationToast";
-import Notifications from "./components/Notifications";
 import DashboardLayout from "./components/DashboardLayout";
 import axios from "axios";
 import { SkeletonTheme } from "react-loading-skeleton";
-import MyEvents from "./components/MyEvents";
+import AdminDashboardOverviewPage from "./pages/AdminDashboardOverviewPage";
+import EventManagementPage from "./pages/EventManagementPage";
+import UserManagementPage from "./pages/UserManagementPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import MyEventsPage from "./pages/MyEventsPage";
+import ParticipantsPage from "./pages/ParticipantsPage";
+import FeedbacksPage from "./pages/FeedbacksPage";
+import EventFormPage from "./pages/EventFormPage";
+import FacultyDashboardOverviewPage from "./pages/FacultyDashboardOverviewPage";
+import StudentDashboardOverviewPage from "./pages/StudentDashboardOverviewPage";
 
 
 const App = () => {
@@ -90,22 +92,30 @@ const App = () => {
           {/* Protected Routes for Admin */}
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/dashboard/admin" element={<DashboardLayout />}>
-              <Route index element={<DashboardOverview />} />
-              <Route path="events" element={<EventManagement />} />
-              <Route path="users" element={<UsersTable />} />
-              <Route path="notifications" element={<Notifications />} />
+              <Route index element={<AdminDashboardOverviewPage />} />
+              <Route path="events" element={<EventManagementPage />} />
+              <Route path="users" element={<UserManagementPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
 
               {/* Nested Routes for Event Management */}
-              <Route path="events/feedback/:eventId" element={<FeedbackTable />} />
-              <Route path="events/participants/:eventId" element={<ParticipantsTable />} />
+              <Route path="events/feedback/:eventId" element={<FeedbacksPage />} />
+              <Route path="events/participants/:eventId" element={<ParticipantsPage />} />
+              <Route path="events/new" element={<EventFormPage />} />
+              <Route path="events/edit/:eventId" element={<EventFormPage />} />
             </Route>
           </Route>
 
           {/* Protected Routes for Faculty */}
           <Route element={<ProtectedRoute allowedRoles={["faculty"]} />}>
             <Route path="/dashboard/faculty" element={<DashboardLayout />}>
-              <Route index element={<DashboardOverview />} />
-              <Route path="my-events" element={<MyEvents />} />
+              <Route index element={<FacultyDashboardOverviewPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="my-events" element={<MyEventsPage />} />
+              <Route path="my-events/new" element={<EventFormPage />} />
+              <Route path="my-events/edit/:eventId" element={<EventFormPage />} />
+              <Route path="my-events/participants/:eventId" element={<ParticipantsPage/>} />
+              <Route path="my-events/feedback/:eventId" element={<FeedbacksPage />} />
+              
             </Route>
 
           </Route>
@@ -113,7 +123,8 @@ const App = () => {
           {/* Protected Routes for Student */}
           <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
             <Route path="/dashboard/student" element={<DashboardLayout />}>
-              {/* Add student-specific routes here */}
+            <Route index element={<StudentDashboardOverviewPage />} />
+              
             </Route>
           </Route>
         </Routes>

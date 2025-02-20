@@ -1,54 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { FiMail, FiBell, FiSearch, FiChevronDown, FiLogOut, FiUserPlus, FiMessageCircle, FiUser } from "react-icons/fi";
+import React, { useState } from "react";
+import { FiMail, FiBell, FiSearch, FiChevronDown, FiLogOut, FiUser } from "react-icons/fi";
 import ThemeToggle from "./ThemeToggle";
 import { useSelector, useDispatch } from "react-redux";
-import axios from "axios";
 import NotificationPopover from "./NotificationPopover";
-import { logout } from "../features/auth/authSlice";
+import { logout, removeDeviceToken } from "../features/auth/authSlice";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const DashboardHeader = () => {
-    const { user, token } = useSelector(state => state.auth);
+    const { user } = useSelector(state => state.auth);
     const dispatch = useDispatch();
-    const [notifications, setNotifications] = useState([]);
+    const { notifications, loading } = useSelector(state => state.notifications);
     const [showPopover, setShowPopover] = useState(false);
-    const [loading, setLoading] = useState(true);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchNotifications = async () => {
-            try {
-                const response = await axios.get(`${BASE_URL}/notifications`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                setNotifications(response.data.notifications);
-            } catch (error) {
-                console.error("Error fetching notifications:", error.response?.data?.message || error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
 
-        if (token) {
-            fetchNotifications();
-        } else {
-            setLoading(false);
-        }
-    }, [token]);
 
     const unreadNotifications = notifications.filter((notif) => !notif.isRead);
 
-    const handleLogout = () => {
-        dispatch(logout());
-        localStorage.removeItem("token");
-        window.location.href = "/login"; // Redirect to login page
+    const handleLogout = async () => {
+        try {
+            await dispatch(removeDeviceToken()).unwrap();
+            dispatch(logout());
+            toast.success("Logged out successfully!");
+            navigate("/login");
+        } catch (error) {
+            toast.error("Failed to remove device token!");
+            console.error("Error removing device token:", error);
+        }
     };
-
+    
     return (
-        <div className="flex items-center justify-between p-4 text-gray-800 bg-white dark:bg-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between p-4 text-gray-800 bg-white dark:bg-gray-900 dark:text-gray-100 sticky top-0 z-50">
             {/* Search */}
             <div className="hidden lg:flex items-center bg-gray-100 rounded-sm px-2 dark:bg-gray-800 border dark:border-gray-700">
                 <input
