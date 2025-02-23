@@ -25,21 +25,16 @@ import FeedbacksPage from "./pages/FeedbacksPage";
 import EventFormPage from "./pages/EventFormPage";
 import FacultyDashboardOverviewPage from "./pages/FacultyDashboardOverviewPage";
 import StudentDashboardOverviewPage from "./pages/StudentDashboardOverviewPage";
+import RegisteredEvents from "./pages/RegisteredEvents";
+import { useTheme } from "./contexts/ThemeContext.jsx";
+import EventDetailPage from "./pages/EventDetailPage.jsx";
 
 
 const App = () => {
   const dispatch = useDispatch();
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const { theme } = useTheme();
   const baseColor = theme === "dark" ? "#374151" : "#E5E7EB";
   const highlightColor = theme === "dark" ? "#4B5563" : "#F3F4F6";
-
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
-  }, []);
 
   useEffect(() => {
     const fetchDeviceToken = async () => {
@@ -77,7 +72,12 @@ const App = () => {
   return (
     <SkeletonTheme baseColor={baseColor} highlightColor={highlightColor}>
       <Router>
-        <Toaster position="top-right" />
+        <Toaster position="top-right" toastOptions={{
+          style: {
+            background: theme === "dark" ? "#333" : "#fff",
+            color: theme === "dark" ? "#fff" : "#000",
+          },
+        }} />
         <NotificationToast />
         <Routes>
           {/* Main Routes */}
@@ -87,6 +87,7 @@ const App = () => {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            <Route path="/events/:eventId" element={<EventDetailPage />} />
           </Route>
 
           {/* Protected Routes for Admin */}
@@ -102,6 +103,7 @@ const App = () => {
               <Route path="events/participants/:eventId" element={<ParticipantsPage />} />
               <Route path="events/new" element={<EventFormPage />} />
               <Route path="events/edit/:eventId" element={<EventFormPage />} />
+              
             </Route>
           </Route>
 
@@ -113,9 +115,9 @@ const App = () => {
               <Route path="my-events" element={<MyEventsPage />} />
               <Route path="my-events/new" element={<EventFormPage />} />
               <Route path="my-events/edit/:eventId" element={<EventFormPage />} />
-              <Route path="my-events/participants/:eventId" element={<ParticipantsPage/>} />
+              <Route path="my-events/participants/:eventId" element={<ParticipantsPage />} />
               <Route path="my-events/feedback/:eventId" element={<FeedbacksPage />} />
-              
+
             </Route>
 
           </Route>
@@ -123,13 +125,17 @@ const App = () => {
           {/* Protected Routes for Student */}
           <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
             <Route path="/dashboard/student" element={<DashboardLayout />}>
-            <Route index element={<StudentDashboardOverviewPage />} />
-              
+              <Route index element={<StudentDashboardOverviewPage />} />
+              <Route path="registered-events" element={<RegisteredEvents />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+
             </Route>
           </Route>
         </Routes>
       </Router>
     </SkeletonTheme>
+
+
   );
 };
 

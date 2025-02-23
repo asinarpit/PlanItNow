@@ -9,23 +9,6 @@ export const fetchEvents = createAsyncThunk("events/fetchEvents", async () => {
   return response.data;
 });
 
-// Fetch events created by the logged-in user
-export const fetchUserEvents = createAsyncThunk(
-  "events/fetchUserEvents",
-  async (_, { getState }) => {
-    const state = getState();
-    const token = state.auth.token;
-
-    const response = await axios.get(`${BASE_URL}/events/user/events`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    return response.data;
-  }
-);
-
 // Create an event
 export const createEvent = createAsyncThunk(
   "events/createEvent",
@@ -133,17 +116,6 @@ const eventsSlice = createSlice({
         state.events = action.payload;
       })
       .addCase(fetchEvents.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-      .addCase(fetchUserEvents.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchUserEvents.fulfilled, (state, action) => {
-        state.loading = false;
-        state.events = action.payload;
-      })
-      .addCase(fetchUserEvents.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })

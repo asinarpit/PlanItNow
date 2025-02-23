@@ -6,7 +6,8 @@ exports.getAllEvents = async (req, res) => {
   try {
     const events = await Event.find()
       .populate("participants")
-      .populate("createdBy");
+      .populate("createdBy")
+      .populate("waitlist");
     res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -24,25 +25,26 @@ exports.getEventsByUser = async (req, res) => {
   try {
     const events = await Event.find({ createdBy: userId })
       .populate("participants")
-      .populate("createdBy");
+      .populate("createdBy")
+      .populate("waitlist");
 
     if (events.length === 0) {
       return res.status(404).json({ message: "No events found for this user" });
     }
 
-    res.status(200).json(events); 
+    res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
 
 // Get a single event
 exports.getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id)
       .populate("participants")
-      .populate("createdBy");
+      .populate("createdBy")
+      .populate("waitlist");
     if (!event) return res.status(404).json({ message: "Event not found" });
     res.status(200).json(event);
   } catch (error) {
@@ -59,7 +61,8 @@ exports.getRegisteredEvents = async (req, res) => {
   try {
     const events = await Event.find({ participants: req.user.id })
       .populate("participants")
-      .populate("createdBy");
+      .populate("createdBy")
+      .populate("waitlist");
 
     if (events.length === 0) {
       return res.status(404).json({ message: "No registered events found" });
@@ -71,13 +74,32 @@ exports.getRegisteredEvents = async (req, res) => {
   }
 };
 
-
 // Create a new event
 exports.createEvent = async (req, res) => {
-  const { title, description, date, location, category, capacity } =
-    req.body;
+  const {
+    title,
+    description,
+    shortDescription,
+    eventType,
+    department,
+    date,
+    endDate,
+    location,
+    virtualEventLink,
+    organizer,
+    capacity,
+    eligibility,
+    registrationRequired,
+    registrationDeadline,
+    registrationFee,
+    paymentLink,
+    targetAudience,
+    prerequisites,
+    agenda,
+    socialMedia,
+    tags,
+  } = req.body;
 
-  console.log(req.user);
   if (!req.user) {
     return res.status(401).json({ message: "User not authenticated" });
   }
@@ -86,8 +108,40 @@ exports.createEvent = async (req, res) => {
 
   try {
     let imageUrl = null;
+    let galleryUrls = [];
 
-    if (req.file) {
+    const parsedOrganizer = organizer ? JSON.parse(organizer) : null;
+    const parsedSocialMedia = socialMedia ? JSON.parse(socialMedia) : null;
+
+    let attachmentUrls = [];
+
+    // Upload attachments
+    if (req.files && req.files.attachments) {
+      for (const file of req.files.attachments) {
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: "events/attachments" },
+            (error, result) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            }
+          );
+          uploadStream.end(file.buffer);
+        });
+
+        attachmentUrls.push({
+          name: file.originalname,
+          url: result.secure_url,
+        });
+      }
+    }
+
+    // Upload main image
+    if (req.files && req.files.image) {
+      const file = req.files.image[0];
       const result = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "events" },
@@ -99,23 +153,69 @@ exports.createEvent = async (req, res) => {
             }
           }
         );
-        uploadStream.end(req.file.buffer);
+        uploadStream.end(file.buffer);
       });
-
       imageUrl = result.secure_url;
+    }
+
+    // Upload gallery images
+    if (req.files && req.files.gallery) {
+      for (const file of req.files.gallery) {
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: "events/gallery" },
+            (error, result) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            }
+          );
+          uploadStream.end(file.buffer);
+        });
+
+        galleryUrls.push(result.secure_url);
+      }
     }
 
     const newEvent = await Event.create({
       title,
       description,
+      shortDescription,
+      eventType,
+      department,
       date,
+      endDate,
       location,
-      category,
+      virtualEventLink,
+      organizer: parsedOrganizer
+        ? {
+            name: parsedOrganizer.name,
+            contactEmail: parsedOrganizer.contactEmail,
+            contactPhone: parsedOrganizer.contactPhone,
+            facultyCoordinator: parsedOrganizer.facultyCoordinator,
+            studentCoordinator: parsedOrganizer.studentCoordinator,
+          }
+        : null,
       capacity,
-      createdBy,
+      eligibility,
+      registrationRequired,
+      registrationDeadline,
+      registrationFee,
+      paymentLink,
+      targetAudience,
+      prerequisites,
+      agenda,
+      socialMedia: parsedSocialMedia,
+      tags,
       image: imageUrl,
+      gallery: galleryUrls,
+      attachments: attachmentUrls,
+      createdBy,
     });
 
+    console.log(newEvent);
     res.status(201).json(newEvent);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -125,8 +225,29 @@ exports.createEvent = async (req, res) => {
 // Update an existing event
 exports.updateEvent = async (req, res) => {
   const { id } = req.params;
-  const { title, description, date, location, category, capacity} =
-    req.body;
+  const {
+    title,
+    description,
+    shortDescription,
+    eventType,
+    department,
+    date,
+    endDate,
+    location,
+    virtualEventLink,
+    organizer,
+    capacity,
+    eligibility,
+    registrationRequired,
+    registrationDeadline,
+    registrationFee,
+    paymentLink,
+    targetAudience,
+    prerequisites,
+    agenda,
+    socialMedia,
+    tags,
+  } = req.body;
 
   if (!req.user) {
     return res.status(401).json({ message: "User not authenticated" });
@@ -134,8 +255,15 @@ exports.updateEvent = async (req, res) => {
 
   try {
     let imageUrl = null;
+    let galleryUrls = [];
 
-    if (req.file) {
+    // Parse JSON fields
+    const parsedOrganizer = organizer ? JSON.parse(organizer) : null;
+    const parsedSocialMedia = socialMedia ? JSON.parse(socialMedia) : null;
+
+    // Upload main image
+    if (req.files && req.files.image) {
+      const file = req.files.image[0];
       const result = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "events" },
@@ -147,10 +275,30 @@ exports.updateEvent = async (req, res) => {
             }
           }
         );
-        uploadStream.end(req.file.buffer);
+        uploadStream.end(file.buffer);
       });
-
       imageUrl = result.secure_url;
+    }
+
+    // Upload gallery images
+    if (req.files && req.files.gallery) {
+      for (const file of req.files.gallery) {
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: "events/gallery" },
+            (error, result) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            }
+          );
+          uploadStream.end(file.buffer);
+        });
+
+        galleryUrls.push(result.secure_url);
+      }
     }
 
     const updatedEvent = await Event.findByIdAndUpdate(
@@ -158,17 +306,42 @@ exports.updateEvent = async (req, res) => {
       {
         title,
         description,
+        shortDescription,
+        eventType,
+        department,
         date,
+        endDate,
         location,
-        category,
+        virtualEventLink,
+        organizer: parsedOrganizer
+          ? {
+              name: parsedOrganizer.name,
+              contactEmail: parsedOrganizer.contactEmail,
+              contactPhone: parsedOrganizer.contactPhone,
+              facultyCoordinator: parsedOrganizer.facultyCoordinator,
+              studentCoordinator: parsedOrganizer.studentCoordinator,
+            }
+          : null,
         capacity,
+        eligibility,
+        registrationRequired,
+        registrationDeadline,
+        registrationFee,
+        paymentLink,
+        targetAudience,
+        prerequisites,
+        agenda,
+        socialMedia: parsedSocialMedia,
+        tags,
         ...(imageUrl && { image: imageUrl }),
+        ...(galleryUrls.length > 0 && { gallery: galleryUrls }),
       },
       { new: true }
     );
 
     if (!updatedEvent)
       return res.status(404).json({ message: "Event not found" });
+
     res.status(200).json(updatedEvent);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -180,7 +353,10 @@ exports.updateEventStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  if (!status || !["pending", "approved", "rejected"].includes(status)) {
+  if (
+    !status ||
+    !["pending", "approved", "rejected", "cancelled"].includes(status)
+  ) {
     return res.status(400).json({ message: "Invalid status value" });
   }
 
@@ -211,7 +387,8 @@ exports.getNewEvents = async (req, res) => {
       createdAt: { $gte: new Date() - 7 * 24 * 60 * 60 * 1000 },
     }) // events created in the last 7 days
       .populate("participants")
-      .populate("createdBy");
+      .populate("createdBy")
+      .populate("waitlist");
     res.status(200).json(newEvents);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -223,7 +400,8 @@ exports.getUpcomingEvents = async (req, res) => {
   try {
     const upcomingEvents = await Event.find({ date: { $gt: new Date() } })
       .populate("participants")
-      .populate("createdBy");
+      .populate("createdBy")
+      .populate("waitlist");
     res.status(200).json(upcomingEvents);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -235,7 +413,8 @@ exports.getFeaturedEvents = async (req, res) => {
   try {
     const featuredEvents = await Event.find({ isFeatured: true })
       .populate("participants")
-      .populate("createdBy");
+      .populate("createdBy")
+      .populate("waitlist");
     res.status(200).json(featuredEvents);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -246,9 +425,10 @@ exports.getFeaturedEvents = async (req, res) => {
 exports.getCategoryEvents = async (req, res) => {
   const { category } = req.params;
   try {
-    const categoryEvents = await Event.find({ category })
+    const categoryEvents = await Event.find({ eventType: category })
       .populate("participants")
-      .populate("createdBy");
+      .populate("createdBy")
+      .populate("waitlist");
     res.status(200).json(categoryEvents);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -302,16 +482,24 @@ exports.toggleRegistration = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (!event.participants.includes(req.user.id)) {
+    // Check if the user is already registered
+    const isRegistered = event.participants.includes(req.user.id);
+
+    if (!isRegistered) {
+      // Check if the event is full
       if (event.participants.length >= event.capacity) {
-        return res
-          .status(400)
-          .json({ message: "Event has reached maximum capacity" });
+        // Add to waitlist
+        event.waitlist.push(req.user.id);
+        await event.save();
+        return res.status(200).json({
+          message: "Event is full. Added to waitlist.",
+          event,
+        });
       }
 
+      // Register the user
       event.participants.push(req.user.id);
       await event.save();
-
       return res.status(200).json({
         message: "Registration successful",
         event,
@@ -349,10 +537,16 @@ exports.checkRegistrationStatus = async (req, res) => {
     }
 
     const isRegistered = event.participants.includes(req.user.id);
+    const isOnWaitlist = event.waitlist.includes(req.user.id);
 
     res.status(200).json({
-      message: isRegistered ? "User is registered" : "User is not registered",
+      message: isRegistered
+        ? "User is registered"
+        : isOnWaitlist
+        ? "User is on waitlist"
+        : "User is not registered",
       isRegistered,
+      isOnWaitlist,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -374,8 +568,11 @@ exports.deleteEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    
-    if (req.user.role !== "admin" && event.createdBy.toString() !== req.user.id) {
+    // Only allow admins or the event creator to delete the event
+    if (
+      req.user.role !== "admin" &&
+      event.createdBy.toString() !== req.user.id
+    ) {
       return res.status(403).json({ message: "Permission denied" });
     }
 
@@ -385,4 +582,3 @@ exports.deleteEvent = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-

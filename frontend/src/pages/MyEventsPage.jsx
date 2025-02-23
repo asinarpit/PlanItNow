@@ -1,21 +1,38 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchUserEvents } from "../features/event/eventsSlice";
-import MyEventCard from "../components/MyEventCard";
+import axios from "axios";
 import { useNavigate } from "react-router";
 import Skeleton from "react-loading-skeleton";
+import MyEventCard from "../components/MyEventCard";
+import { useSelector } from "react-redux";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const MyEventsPage = () => {
-  const dispatch = useDispatch();
-  const { events, loading, error } = useSelector((state) => state.events);
-  const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [sortedEvents, setSortedEvents] = useState([]);
   const [sortType, setSortType] = useState("");
+  const navigate = useNavigate();
+  const token = useSelector((state) => state.auth.token);
 
   useEffect(() => {
-    dispatch(fetchUserEvents());
-  }, [dispatch]);
+    const fetchUserEvents = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${BASE_URL}/events/user/events`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setEvents(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to fetch events");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserEvents();
+  }, [token]);
 
   useEffect(() => {
     if (events.length) {
@@ -61,7 +78,6 @@ const MyEventsPage = () => {
         </div>
       </div>
 
-
       {error && <p className="text-red-500">Error: {error}</p>}
 
       {events.length === 0 && !loading ? (
@@ -69,21 +85,17 @@ const MyEventsPage = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading
-            ?
-            Array.from({ length: events.length }).map((_, index) => (
-              <div className="bg-white dark:bg-gray-900 rounded-sm p-4 shadow-md">
+            ? Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="bg-white dark:bg-gray-900 rounded-sm p-4 shadow-md">
                 <Skeleton height={150} />
                 <div className="p-4">
                   <Skeleton width="60%" />
                   <Skeleton width="80%" />
                   <Skeleton count={4} className="mt-2" width={"40%"} />
-
                 </div>
               </div>
             ))
-            : sortedEvents.map((event) => (
-              <MyEventCard key={event._id} event={event} />
-            ))}
+            : sortedEvents.map((event) => <MyEventCard key={event._id} event={event} />)}
         </div>
       )}
     </div>

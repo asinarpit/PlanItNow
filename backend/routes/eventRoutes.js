@@ -29,33 +29,57 @@ router.get("/upcoming", getUpcomingEvents);
 router.get("/featured", getFeaturedEvents);
 router.get("/category/:category", getCategoryEvents);
 router.get("/", getAllEvents);
-router.get("/user/events", authenticateUser, authorizeRoles("admin", "faculty"), getEventsByUser);
+router.get(
+  "/user/events",
+  authenticateUser,
+  authorizeRoles("admin", "faculty"),
+  getEventsByUser
+);
+router.get(
+  "/user/registered",
+  authenticateUser,
+  authorizeRoles("student"),
+  getRegisteredEvents
+);
 router.get("/:id", getEventById);
-router.patch("/:id/feature", authenticateUser, featureEvent);
+router.patch(
+  "/:id/feature",
+  authenticateUser,
+  authorizeRoles("admin"),
+  featureEvent
+);
 router.post(
   "/",
   authenticateUser,
   authorizeRoles("admin", "faculty"),
-  upload.single("image"),
+  upload,
   createEvent
 );
-router.get("/registered", authenticateUser, authorizeRoles("student"), getRegisteredEvents);
 
 router.put(
   "/:id",
   authenticateUser,
   authorizeRoles("admin", "faculty"),
-  upload.single("image"),
+ upload,
   updateEvent
 );
-router.delete("/:id", authenticateUser, authorizeRoles("admin", "faculty"), deleteEvent);
+router.delete(
+  "/:id",
+  authenticateUser,
+  authorizeRoles("admin", "faculty"),
+  deleteEvent
+);
 router.post(
   "/:id/register",
   authenticateUser,
   authorizeRoles("faculty", "student", "admin"),
   toggleRegistration
 );
-router.get("/:id/check-registration",authenticateUser, checkRegistrationStatus);
+router.get(
+  "/:id/check-registration",
+  authenticateUser,
+  checkRegistrationStatus
+);
 router.put(
   "/:id/status",
   authenticateUser,

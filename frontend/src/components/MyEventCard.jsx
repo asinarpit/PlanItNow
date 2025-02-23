@@ -1,22 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import { AiOutlineDelete, AiOutlineEdit, AiOutlineMore } from "react-icons/ai";
 import { MdOutlineFeedback } from "react-icons/md";
-
-import { FaUsers } from "react-icons/fa";
+import { FaUsers, FaCalendarAlt, FaMapMarkerAlt, FaTag } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { deleteEvent } from "../features/event/eventsSlice";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+import { ImSpinner8 } from "react-icons/im";
 
 const MyEventCard = ({ event }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const menuRef = useRef(null);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   const handleEdit = () => {
     navigate(`edit/${event._id}`);
@@ -24,13 +23,16 @@ const MyEventCard = ({ event }) => {
   };
 
   const handleDelete = async () => {
+    setIsDeleting(true);
     try {
       await dispatch(deleteEvent(event._id)).unwrap();
       toast.success("Event deleted successfully!");
     } catch (error) {
       toast.error("Failed to delete the event.");
+    } finally {
+      setIsDeleting(false);
+      setIsOpen(false);
     }
-    setIsOpen(false);
   };
 
   const handleViewFeedback = () => {
@@ -51,79 +53,101 @@ const MyEventCard = ({ event }) => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const eventDate = new Date(event.date);
+  const formattedDate = eventDate.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-sm shadow-md overflow-hidden">
-      <img
-        className="w-full h-48 object-cover"
-        src={event.image || "https://placehold.co/400"}
-        alt={event.title}
-      />
-      <div className="p-4">
-        <h3 className="text-xl font-semibold">{event.title}</h3>
-        <p className="text-sm mt-2">{event.description}</p>
-        <p className="text-sm mt-2">
-          <strong>Date:</strong>{" "}
-          {new Date(event.date).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })}
-        </p>
-        <p className="text-sm mt-2">
-          <strong>Location:</strong> {event.location}
-        </p>
-        <p className="text-sm mt-2">
-          <strong>Category:</strong> {event.category}
-        </p>
-        <p className="text-sm mt-2">
-          <strong>Capacity:</strong> {event.capacity}
-        </p>
+    <div className="relative group bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col">
+      <div className="relative">
+        <img
+          className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+          src={event.image || "https://placehold.co/400"}
+          alt={event.title}
+        />
+        <div className="absolute top-4 right-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+          {event.category}
+        </div>
+      </div>
 
-        <div className="flex justify-end mt-3 relative" ref={menuRef}>
-          <button
-            onClick={toggleMenu}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-          >
-            <AiOutlineMore className="text-xl" />
-          </button>
+      <div className="p-6 flex flex-col flex-grow">
+        <div className="mb-4 flex-grow">
+          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+            {event.title}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-4">
+            {event.description}
+          </p>
 
-          {isOpen && (
-            <div className="absolute right-0 bottom-0 mt-2 w-44 bg-white dark:bg-gray-800 shadow-lg rounded-md overflow-hidden z-50 border dark:border-gray-700">
-              <button
-                onClick={handleEdit}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-              >
-                <AiOutlineEdit className="mr-2 text-lg" />
-                Edit
-              </button>
-              <button
-                onClick={handleViewParticipants}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-              >
-                <FaUsers className="mr-2 text-lg" />
-                Participants
-              </button>
-              <button
-                onClick={handleViewFeedback}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-              >
-                <MdOutlineFeedback className="mr-2 text-lg" />
-                Feedbacks
-              </button>
-              <button
-                onClick={handleDelete}
-                className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:bg-red-500 hover:text-white"
-              >
-                <AiOutlineDelete className="mr-2 text-lg" />
-                Delete
-              </button>
+          <div className="space-y-3">
+            <div className="flex items-center text-gray-600 dark:text-gray-400">
+              <FaCalendarAlt className="mr-2 text-teal-600" />
+              <span>{formattedDate}</span>
             </div>
-          )}
+            <div className="flex items-center text-gray-600 dark:text-gray-400">
+              <FaMapMarkerAlt className="mr-2 text-teal-600" />
+              <span>{event.location}</span>
+            </div>
+            <div className="flex items-center text-gray-600 dark:text-gray-400">
+              <FaUsers className="mr-2 text-teal-600" />
+              <span>{event.participants?.length || 0} / {event.capacity} attendees</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-5 right-5">
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={toggleMenu}
+              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200"
+            >
+              <AiOutlineMore className="text-xl" />
+            </button>
+
+            {isOpen && (
+              <div className="absolute right-0 bottom-full mb-2 w-56 bg-white dark:bg-gray-700 shadow-lg rounded-lg overflow-hidden z-50 border dark:border-gray-600">
+                <button
+                  onClick={handleEdit}
+                  className="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                >
+                  <AiOutlineEdit className="mr-3 text-lg" />
+                  Edit Event
+                </button>
+                <button
+                  onClick={handleViewParticipants}
+                  className="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                >
+                  <FaUsers className="mr-3 text-lg" />
+                  View Participants
+                </button>
+                <button
+                  onClick={handleViewFeedback}
+                  className="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                >
+                  <MdOutlineFeedback className="mr-3 text-lg" />
+                  View Feedback
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex items-center w-full px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-200"
+                >
+                  {isDeleting ? (
+                    <ImSpinner8 className="mr-3 animate-spin" />
+                  ) : (
+                    <AiOutlineDelete className="mr-3 text-lg" />
+                  )}
+                  Delete Event
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
