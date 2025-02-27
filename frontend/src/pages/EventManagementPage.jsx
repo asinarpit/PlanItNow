@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import { RxCaretSort } from "react-icons/rx";
-import { FaEdit, FaTrash, FaCommentDots, FaUsers } from "react-icons/fa";
+import { FaEdit, FaTrash, FaCommentDots, FaUsers, FaInfoCircle } from "react-icons/fa";
 
 const EventManagementPage = () => {
   const [sortConfig, setSortConfig] = useState({ key: "date", order: "asc" });
@@ -13,6 +13,7 @@ const EventManagementPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { events, loading } = useSelector((state) => state.events);
+
 
   useEffect(() => {
     dispatch(fetchEvents());
@@ -61,6 +62,10 @@ const EventManagementPage = () => {
     navigate(`participants/${eventId}`);
   };
 
+  const handleViewDetails = (eventId) => {
+    navigate(`${eventId}`); // Adjust the route as per your setup
+  };
+
   const handleSort = (key) => {
     setSortConfig((prevConfig) => ({
       key,
@@ -74,14 +79,15 @@ const EventManagementPage = () => {
 
   // Filter events based on search query
   const filteredEvents = events.filter((event) => {
-    const searchText = searchQuery.trim();
-    if (!searchText) return true; // Return all events if search query is empty
+    const searchText = searchQuery.trim().toLowerCase();
+    if (!searchText) return true;
+
     return (
-      event.title.toLowerCase().includes(searchText) ||
-      event.description.toLowerCase().includes(searchText) ||
-      event.location.toLowerCase().includes(searchText) ||
-      event.category.toLowerCase().includes(searchText) ||
-      event.createdBy.name.toLowerCase().includes(searchText)
+      event.title?.toLowerCase()?.includes(searchText) ||
+      event.shortDescription?.toLowerCase()?.includes(searchText) ||
+      event.location?.toLowerCase()?.includes(searchText) ||
+      event.category?.toLowerCase()?.includes(searchText) ||
+      event.createdBy?.name?.toLowerCase()?.includes(searchText)
     );
   });
 
@@ -94,7 +100,7 @@ const EventManagementPage = () => {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto">
-      <h2 className="text-2xl font-bold text-center mb-6">Events</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Events</h2>
         <div className="flex justify-between items-center mb-4">
           {/* Search Box */}
           <div className="mb-4">
@@ -124,12 +130,13 @@ const EventManagementPage = () => {
                 {[
                   { key: "title", label: "Title" },
                   { key: "date", label: "Date" },
-                  { key: "description", label: "Description" },
+                  { key: "shortDescription", label: "Short Description" },
                   { key: "createdBy.name", label: "Creator" },
                   { key: "participants.length", label: "Participants" },
                   { key: "status", label: "Status" },
                   { key: "location", label: "Location" },
-                  { key: "category", label: "Category" },
+                  { key: "eventType", label: "Event Type" },
+                  { key: "department", label: "Department" },
                   { key: "capacity", label: "Capacity" },
                   { key: "isFeatured", label: "Featured" },
                 ].map(({ key, label }) => (
@@ -221,7 +228,9 @@ const EventManagementPage = () => {
                         year: "numeric",
                       })}
                     </td>
-                    <td className="py-3 px-6 text-sm">{event.description}</td>
+                    <td className="relative py-3 px-6 text-sm max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap hover:whitespace-normal hover:overflow-visible hover:h-auto cursor-pointer">
+                      {event.shortDescription}
+                    </td>
                     <td className="py-3 px-6 text-sm">{event.createdBy.name}</td>
                     <td className="py-3 px-6 text-sm">{event.participants.length}</td>
                     <td className="py-3 px-6 text-sm">
@@ -231,15 +240,21 @@ const EventManagementPage = () => {
                         className={`p-1 rounded cursor-pointer
               ${event.status === "pending" ? "bg-yellow-600/10 text-yellow-600" : ""}
               ${event.status === "approved" ? "bg-green-600/10 text-green-600" : ""}
-              ${event.status === "rejected" ? "bg-red-600/10 text-red-600" : ""}`}
+              ${event.status === "rejected" ? "bg-red-600/10 text-red-600" : ""}
+              ${event.status === "cancelled" ? "bg-orange-600/10 text-orange-600" : ""}
+              
+              `}
                       >
                         <option className="bg-white dark:bg-gray-800 cursor-pointer" value="pending">Pending</option>
                         <option className="bg-white  dark:bg-gray-800 cursor-pointer" value="approved">Approved</option>
                         <option className="bg-white  dark:bg-gray-800 cursor-pointer" value="rejected">Rejected</option>
+                        <option className="bg-white  dark:bg-gray-800 cursor-pointer" value="cancelled">Cancelled</option>
+
                       </select>
                     </td>
                     <td className="py-3 px-6 text-sm">{event.location}</td>
-                    <td className="py-3 px-6 text-sm">{event.category}</td>
+                    <td className="py-3 px-6 text-sm">{event.eventType}</td>
+                    <td className="py-3 px-6 text-sm">{event.department}</td>
                     <td className="py-3 px-6 text-sm">{event.capacity}</td>
                     <td className="py-3 px-6 text-sm">
                       <select
@@ -288,6 +303,15 @@ const EventManagementPage = () => {
                           <FaUsers />
                           <span className="absolute top-full px-2 py-1 text-xs bg-gray-800  rounded opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                             Participants
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => handleViewDetails(event._id)}
+                          className="relative z-10 text-gray-500 hover:underline text-sm flex items-center group"
+                        >
+                          <FaInfoCircle />
+                          <span className="absolute top-full px-2 py-1 text-xs bg-gray-800 rounded opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                            View Details
                           </span>
                         </button>
                       </div>

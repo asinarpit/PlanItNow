@@ -4,7 +4,7 @@ import { FaTachometerAlt, FaCalendarAlt, FaUsers } from "react-icons/fa";
 import { IoIosNotifications } from "react-icons/io";
 
 const Sidebar = () => {
-  const { role } = useSelector((state) => state.auth);
+  const {role} = useSelector((state) => state.auth.user);
 
   return (
     <div className="w-64 bg-white dark:bg-gray-900 h-screen border-r dark:border-gray-700 flex flex-col sticky top-0 p-4">

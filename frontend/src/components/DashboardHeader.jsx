@@ -7,7 +7,6 @@ import { logout, removeDeviceToken } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const DashboardHeader = () => {
     const { user } = useSelector(state => state.auth);
@@ -27,12 +26,14 @@ const DashboardHeader = () => {
             dispatch(logout());
             toast.success("Logged out successfully!");
             navigate("/login");
+            setDropdownOpen(false);
         } catch (error) {
             toast.error("Failed to remove device token!");
             console.error("Error removing device token:", error);
+            setDropdownOpen(false);
         }
     };
-    
+
     return (
         <div className="flex items-center justify-between p-4 text-gray-800 bg-white dark:bg-gray-900 dark:text-gray-100 sticky top-0 z-50">
             {/* Search */}
@@ -60,7 +61,7 @@ const DashboardHeader = () => {
                         <FiBell className="w-5 h-5 cursor-pointer hover:text-teal-600" />
                         {/* Notification Badge */}
                         {unreadNotifications.length > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[0.65rem] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                                 {unreadNotifications.length}
                             </span>
                         )}
@@ -78,11 +79,11 @@ const DashboardHeader = () => {
                         onClick={() => setDropdownOpen(!dropdownOpen)}
                     >
                         <img
-                            src="https://placehold.co/50"
+                            src={user.image || "https://placehold.co/50"}
                             alt="profile"
-                            className="w-8 h-8 rounded-full"
+                            className="w-8 h-8 rounded-full object-cover"
                         />
-                        <span className="hidden lg:block">{user}</span>
+                        <span className="hidden lg:block">{user.name}</span>
                         <FiChevronDown
                             className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""
                                 }`}
@@ -91,11 +92,11 @@ const DashboardHeader = () => {
                     </div>
 
                     {/* Dropdown Menu */}
-                    {/* Dropdown Menu */}
                     {dropdownOpen && (
                         <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-md z-50">
                             <ul className="py-2">
-                                <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                                <li onClick={() => { navigate("/dashboard/admin/my-profile"); setDropdownOpen(false); }
+                                } className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                                     <FiUser className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                                     <span>Profile</span>
                                 </li>

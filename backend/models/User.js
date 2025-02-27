@@ -4,9 +4,15 @@ const bcrypt = require("bcrypt");
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    image: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ["student", "faculty", "admin"], default: "student" },
+    role: {
+      type: String,
+      enum: ["student", "faculty", "admin"],
+      default: "student",
+    },
+    eventsParticipated: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
     deviceTokens: [{ type: String }],
   },
   { timestamps: true }
@@ -30,7 +36,7 @@ userSchema.set("toJSON", {
   transform: function (doc, ret, options) {
     delete ret.password;
     return ret;
-  }
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

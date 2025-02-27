@@ -12,14 +12,14 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { deviceToken, status } = useSelector((state) => state.auth);
+  const { user, status } = useSelector((state) => state.auth);
   const loading = status === "loading";
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
 
-    dispatch(loginUser({ email, password, deviceToken }))
+    dispatch(loginUser({ email, password, deviceToken: user.deviceToken }))
       .unwrap()
       .then(({ role }) => {
         toast.success("User logged in successfully!");
@@ -35,7 +35,7 @@ const LoginPage = () => {
             navigate("/dashboard/student");
             break;
           default:
-            navigate("/home");
+            navigate("/");
         }
       })
       .catch((error) => {

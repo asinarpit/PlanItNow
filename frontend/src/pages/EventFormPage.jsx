@@ -470,12 +470,13 @@ const EventFormPage = () => {
               className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
               disabled={loading}
             />
+            {formData.image && (
+              <div className="mb-4">
+                <p>Selected Image: {formData.image.name}</p>
+              </div>
+            )}
           </div>
-          {formData.image && (
-            <div className="mb-4">
-              <p>Selected Image: {formData.image.name}</p>
-            </div>
-          )}
+
           <div className="mb-4">
             <label className="block mb-2">Event Gallery Images</label>
             <input

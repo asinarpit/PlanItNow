@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect} from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import HomePage from "./pages/HomePage";
 import { Toaster } from "react-hot-toast";
@@ -25,9 +25,11 @@ import FeedbacksPage from "./pages/FeedbacksPage";
 import EventFormPage from "./pages/EventFormPage";
 import FacultyDashboardOverviewPage from "./pages/FacultyDashboardOverviewPage";
 import StudentDashboardOverviewPage from "./pages/StudentDashboardOverviewPage";
-import RegisteredEvents from "./pages/RegisteredEvents";
 import { useTheme } from "./contexts/ThemeContext.jsx";
 import EventDetailPage from "./pages/EventDetailPage.jsx";
+import AdminEventDetailPage from "./pages/AdminEventDetailPage.jsx";
+import MyProfile from "./pages/ProfilePage.jsx";
+import RegisteredEventsPage from "./pages/RegisteredEventsPage.jsx";
 
 
 const App = () => {
@@ -96,6 +98,7 @@ const App = () => {
               <Route index element={<AdminDashboardOverviewPage />} />
               <Route path="events" element={<EventManagementPage />} />
               <Route path="users" element={<UserManagementPage />} />
+              <Route path="my-profile" element={<MyProfile/>}/>
               <Route path="notifications" element={<NotificationsPage />} />
 
               {/* Nested Routes for Event Management */}
@@ -103,6 +106,7 @@ const App = () => {
               <Route path="events/participants/:eventId" element={<ParticipantsPage />} />
               <Route path="events/new" element={<EventFormPage />} />
               <Route path="events/edit/:eventId" element={<EventFormPage />} />
+              <Route path="events/:eventId" element={<AdminEventDetailPage/>}/>
               
             </Route>
           </Route>
@@ -126,7 +130,7 @@ const App = () => {
           <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
             <Route path="/dashboard/student" element={<DashboardLayout />}>
               <Route index element={<StudentDashboardOverviewPage />} />
-              <Route path="registered-events" element={<RegisteredEvents />} />
+              <Route path="registered-events" element={<RegisteredEventsPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
 
             </Route>

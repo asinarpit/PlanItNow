@@ -35,12 +35,7 @@ router.get(
   authorizeRoles("admin", "faculty"),
   getEventsByUser
 );
-router.get(
-  "/user/registered",
-  authenticateUser,
-  authorizeRoles("student"),
-  getRegisteredEvents
-);
+router.get("/user/registered", authenticateUser, getRegisteredEvents);
 router.get("/:id", getEventById);
 router.patch(
   "/:id/feature",
@@ -60,7 +55,7 @@ router.put(
   "/:id",
   authenticateUser,
   authorizeRoles("admin", "faculty"),
- upload,
+  upload,
   updateEvent
 );
 router.delete(

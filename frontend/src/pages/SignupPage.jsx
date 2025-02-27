@@ -9,16 +9,16 @@ const SignupPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); 
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("student");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordMatchError, setPasswordMatchError] = useState("");
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const {deviceToken, status } = useSelector((state) => state.auth);
+  const { deviceToken, status } = useSelector((state) => state.auth);
   const loading = status === "loading";
 
   const handleSignup = async (e) => {
@@ -107,7 +107,7 @@ const SignupPage = () => {
             <option value="faculty">Faculty</option>
             <option value="admin">Admin</option>
           </select>
-          
+
           <button
             type="submit"
             disabled={loading}

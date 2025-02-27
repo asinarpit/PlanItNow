@@ -9,9 +9,9 @@ import { useNavigate } from "react-router";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const EventCard = ({ event }) => {
-  const { token, email } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
   const [isRegistered, setIsRegistered] = useState(
-    event.participants.some((participant) => participant.email === email)
+    event.participants.some((participant) => participant._id === user.id)
   );
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();

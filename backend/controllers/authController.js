@@ -44,6 +44,7 @@ const signup = async (req, res) => {
       const token = generateToken(user._id, user.role);
       res.status(201).json({
         token,
+        _id: user._id,
         role: user.role,
         name: user.name,
         email: user.email,
@@ -77,8 +78,10 @@ const login = async (req, res) => {
     const token = generateToken(user._id, user.role);
     res.json({
       token,
+      _id: user._id,
       role: user.role,
       name: user.name,
+      image: user.image,
       email: user.email,
       deviceTokens: user.deviceTokens,
     });

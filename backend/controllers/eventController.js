@@ -1,5 +1,6 @@
 const cloudinary = require("../config/cloudinary");
 const Event = require("../models/Event");
+const User = require("../models/User");
 
 // Fetch all events
 exports.getAllEvents = async (req, res) => {
@@ -215,7 +216,6 @@ exports.createEvent = async (req, res) => {
       createdBy,
     });
 
-    console.log(newEvent);
     res.status(201).json(newEvent);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -257,7 +257,6 @@ exports.updateEvent = async (req, res) => {
     let imageUrl = null;
     let galleryUrls = [];
 
-    // Parse JSON fields
     const parsedOrganizer = organizer ? JSON.parse(organizer) : null;
     const parsedSocialMedia = socialMedia ? JSON.parse(socialMedia) : null;
 
@@ -477,18 +476,20 @@ exports.toggleRegistration = async (req, res) => {
 
   try {
     const event = await Event.findById(id);
+    const user = await User.findById(req.user.id);
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Check if the user is already registered
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     const isRegistered = event.participants.includes(req.user.id);
 
     if (!isRegistered) {
-      // Check if the event is full
       if (event.participants.length >= event.capacity) {
-        // Add to waitlist
         event.waitlist.push(req.user.id);
         await event.save();
         return res.status(200).json({
@@ -497,20 +498,24 @@ exports.toggleRegistration = async (req, res) => {
         });
       }
 
-      // Register the user
       event.participants.push(req.user.id);
+      user.eventsParticipated.push(event._id);
       await event.save();
+      await user.save();
       return res.status(200).json({
         message: "Registration successful",
         event,
       });
     }
 
-    // If the user is already registered, unregister them
     event.participants = event.participants.filter(
       (participant) => participant.toString() !== req.user.id
     );
+    user.eventsParticipated = user.eventsParticipated.filter(
+      (eventId) => eventId.toString() !== event._id.toString()
+    );
     await event.save();
+    await user.save();
 
     res.status(200).json({
       message: "Unregistration successful",

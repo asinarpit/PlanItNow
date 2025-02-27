@@ -4,21 +4,23 @@ import { Navigate, Outlet } from "react-router";
 import toast from "react-hot-toast";
 
 const ProtectedRoute = ({ allowedRoles }) => {
-  const { user, role } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (!user) {
+    if (!user?.id) {
       toast.error("You need to log in to access this page.");
-    } else if (allowedRoles && !allowedRoles.includes(role)) {
+    } else if (allowedRoles && !allowedRoles.includes(user?.role)) {
       toast.error("You don't have permission to access this page.");
     }
-  }, [user, role, allowedRoles]);
+  }, [user, allowedRoles]);
 
-  if (!user) {
+
+  if (!user?.id) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(role)) {
+
+  if (allowedRoles && !allowedRoles.includes(user?.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
 

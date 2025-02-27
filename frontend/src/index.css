@@ -28,50 +28,50 @@ body {
   }
 }
 
-/* Scrollbar Styling for Light Mode */
-body {
-  scrollbar-color: #d1d5db #f3f4f6; /* thumb and track colors */
+
+/* Light Mode Scrollbar */
+html {
+  scrollbar-color: #d1d5db #f3f4f6;
 }
 
-body::-webkit-scrollbar {
+html::-webkit-scrollbar {
   width: 8px;
 }
 
-body::-webkit-scrollbar-track {
-  background-color: #f3f4f6; /* Light mode track color */
+html::-webkit-scrollbar-track {
+  background-color: #f3f4f6;
 }
 
-body::-webkit-scrollbar-thumb {
-  background-color: #d1d5db; /* Light mode thumb color */
+html::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
   border-radius: 4px;
 }
 
-body::-webkit-scrollbar-thumb:hover {
-  background-color: #a0aec0; /* Darker thumb color on hover for light mode */
+html::-webkit-scrollbar-thumb:hover {
+  background-color: #a0aec0;
 }
 
-/* Scrollbar Styling for Dark Mode */
-body.dark {
-  scrollbar-color: #4a5568 #2d3748; /* thumb and track colors */
+/* Dark Mode Scrollbar */
+html.dark {
+  scrollbar-color: #4a5568 #2d3748;
 }
 
-body.dark::-webkit-scrollbar {
+html.dark::-webkit-scrollbar {
   width: 8px;
 }
 
-body.dark::-webkit-scrollbar-track {
-  background-color: #2d3748; /* Dark mode track color */
+html.dark::-webkit-scrollbar-track {
+  background-color: #2d3748;
 }
 
-body.dark::-webkit-scrollbar-thumb {
-  background-color: #4a5568; /* Dark mode thumb color */
+html.dark::-webkit-scrollbar-thumb {
+  background-color: #4a5568;
   border-radius: 4px;
 }
 
-body.dark::-webkit-scrollbar-thumb:hover {
-  background-color: #2d3748; /* Darker thumb color on hover for dark mode */
+html.dark::-webkit-scrollbar-thumb:hover {
+  background-color: #2d3748;
 }
-
 
 /* Custom Checkbox Styling */
 input[type="checkbox"] {

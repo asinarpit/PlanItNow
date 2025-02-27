@@ -10,7 +10,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const EventDetailPage = () => {
   const { eventId } = useParams();
-  const { token, email } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
   const [event, setEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
@@ -22,7 +22,7 @@ const EventDetailPage = () => {
       try {
         const response = await axios.get(`${BASE_URL}/events/${eventId}`);
         setEvent(response.data);
-        setIsRegistered(response.data.participants?.some(participant => participant.email === email));
+        setIsRegistered(response.data.participants?.some(participant => participant._id === user.id));
       } catch (error) {
         console.error("Error fetching event:", error);
         setIsError(true);
@@ -33,7 +33,7 @@ const EventDetailPage = () => {
     };
 
     fetchEvent();
-  }, [eventId, email]);
+  }, [eventId, user]);
 
   const handleToggleRegistration = async () => {
     if (loading) return;

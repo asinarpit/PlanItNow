@@ -6,21 +6,24 @@ import toast from "react-hot-toast";
 import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => {
-  const { user, role } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleLogout = () => {
-    dispatch(removeDeviceToken()).then(() => {
+  const handleLogout = async () => {
+    try {
+      await dispatch(removeDeviceToken()).unwrap();
       dispatch(logout());
-    });
-    toast.success("Logged out successfully!");
-    navigate("/login");
+      toast.success("Logged out successfully!");
+      navigate("/login");
+    } catch (error) {
+      toast.error("Logout failed. Please try again.");
+    }
   };
 
   const dashboardLink = user ?
-    (role === "student" ? "/dashboard/student" :
-      (role === "admin" ? "/dashboard/admin" :
+    (user.role === "student" ? "/dashboard/student" :
+      (user.role === "admin" ? "/dashboard/admin" :
         "/dashboard/faculty")) : null;
 
   return (
@@ -47,7 +50,7 @@ const Navbar = () => {
         >
           About
         </NavLink>
-        {user && (
+        {user.id && (
           <NavLink
             to={dashboardLink}
             className={({ isActive }) =>
@@ -57,7 +60,7 @@ const Navbar = () => {
             Dashboard
           </NavLink>
         )}
-        {user ? (
+        {user.id ? (
           <button
             onClick={handleLogout}
             className="bg-red-500 dark:bg-red-700 px-3 py-1 rounded-md hover:bg-red-600 dark:hover:bg-red-800 text-gray-100"

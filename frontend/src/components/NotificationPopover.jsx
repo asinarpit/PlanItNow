@@ -6,7 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 
 const NotificationPopover = ({ notifications, loading, onClose }) => {
     const navigate = useNavigate();
-    const { role } = useSelector(state => state.auth);
+    const { role } = useSelector(state => state.auth.user);
 
     const handleButtonClick = () =>{
         navigate(`/dashboard/${role}/notifications`);
