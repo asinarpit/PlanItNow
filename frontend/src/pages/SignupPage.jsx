@@ -4,6 +4,7 @@ import { signupUser } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FcGoogle } from "react-icons/fc";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -36,6 +37,10 @@ const SignupPage = () => {
       .catch((error) => {
         toast.error("Error registering user: " + error.message || error);
       });
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   return (
@@ -117,6 +122,15 @@ const SignupPage = () => {
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
+
+         <button
+                  onClick={handleGoogleLogin}
+                  className="w-full p-2 mt-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md flex items-center justify-center gap-2"
+                >
+                  <FcGoogle className="w-5 h-5" />
+                  <span>Continue with Google</span>
+                </button>
+
         <p className="mt-4 text-center">
           Already have an account?{" "}
           <a href="/login" className="text-blue-500">Login</a>

@@ -30,6 +30,8 @@ import EventDetailPage from "./pages/EventDetailPage.jsx";
 import AdminEventDetailPage from "./pages/AdminEventDetailPage.jsx";
 import MyProfile from "./pages/ProfilePage.jsx";
 import RegisteredEventsPage from "./pages/RegisteredEventsPage.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
+import GoogleCallback from "./pages/GoogleCallback.jsx";
 
 
 const App = () => {
@@ -74,6 +76,7 @@ const App = () => {
   return (
     <SkeletonTheme baseColor={baseColor} highlightColor={highlightColor}>
       <Router>
+      <ScrollToTop/>
         <Toaster position="top-right" toastOptions={{
           style: {
             background: theme === "dark" ? "#333" : "#fff",
@@ -90,6 +93,7 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route path="/events/:eventId" element={<EventDetailPage />} />
+            <Route path="/auth/google/callback" element={<GoogleCallback />} />
           </Route>
 
           {/* Protected Routes for Admin */}
@@ -121,6 +125,7 @@ const App = () => {
               <Route path="my-events/edit/:eventId" element={<EventFormPage />} />
               <Route path="my-events/participants/:eventId" element={<ParticipantsPage />} />
               <Route path="my-events/feedback/:eventId" element={<FeedbacksPage />} />
+              <Route path="my-profile" element={<MyProfile/>}/>
 
             </Route>
 
@@ -132,6 +137,7 @@ const App = () => {
               <Route index element={<StudentDashboardOverviewPage />} />
               <Route path="registered-events" element={<RegisteredEventsPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="my-profile" element={<MyProfile/>}/>
 
             </Route>
           </Route>

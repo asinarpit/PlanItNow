@@ -4,18 +4,39 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const AdminDashboardOverviewPage = () => {
   const { token } = useSelector((state) => state.auth);
   const [overview, setOverview] = useState({
+    totalUsers: 0,
     totalEvents: 0,
     totalParticipants: 0,
-    upcomingEvents: 0,
+    upcomingEventsCount: 0,
     pendingEvents: 0,
     approvedEvents: 0,
     registeredUsers: 0,
+    eventsByDepartment: [],
+    eventsByType: [],
+    cancelledEvents: 0,
+    featuredEventsCount: 0,
+    virtualEventsCount: 0,
+    waitlistedParticipants: 0,
+    totalRegistrationFees: 0,
+    paidEventsCount: 0,
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,12 +57,9 @@ const AdminDashboardOverviewPage = () => {
         });
 
         setOverview({
-          totalEvents: response.data.totalEvents,
-          totalParticipants: response.data.totalParticipants,
-          upcomingEvents: response.data.upcomingEventsCount,
-          pendingEvents: response.data.pendingEvents,
-          approvedEvents: response.data.approvedEvents,
-          registeredUsers: response.data.registeredUsers,
+          ...response.data,
+          eventsByDepartment: response.data.eventsByDepartment || [],
+          eventsByType: response.data.eventsByType || [],
         });
       } catch (err) {
         setError("Failed to fetch dashboard stats");
@@ -54,47 +72,188 @@ const AdminDashboardOverviewPage = () => {
     fetchDashboardStats();
   }, [token]);
 
-  if (loading) return (
-    <div className="grid grid-cols-3 gap-6">
-      {[...Array(6)].map((_, index) => (
-        <div key={index} className="p-6 rounded-lg shadow bg-white dark:bg-gray-900">
-          <Skeleton height={20} width="80%" />
-          <Skeleton height={20} width="60%" className="mt-4" />
-        </div>
-      ))}
-    </div>
-  );
+  // Data for charts
+  const departmentData = overview.eventsByDepartment.map((dept) => ({
+    name: dept._id || "General",
+    events: dept.count,
+  }));
 
-  if (error) return <p>{error}</p>;
+  const eventTypeData = overview.eventsByType.map((type) => ({
+    name: type._id || "Other",
+    events: type.count,
+  }));
+
+  const eventStatusData = [
+    { name: "Pending", value: overview.pendingEvents },
+    { name: "Approved", value: overview.approvedEvents },
+    { name: "Cancelled", value: overview.cancelledEvents },
+  ];
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AF19FF"]; // Chart colors
+
+  if (loading)
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, index) => (
+            <div
+              key={index}
+              className="p-4 rounded-lg shadow bg-white dark:bg-gray-800"
+            >
+              <Skeleton height={20} width="70%" />
+              <Skeleton height={24} width="50%" className="mt-2" />
+            </div>
+          ))}
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Skeleton height={300} className="rounded-lg" />
+          <Skeleton height={300} className="rounded-lg" />
+        </div>
+      </div>
+    );
+
+  if (error) return <p className="text-red-500 dark:text-red-400">{error}</p>;
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      <div className="bg-teal-600 text-gray-100 p-6 rounded-lg shadow dark:bg-gray-900">
-        <h3 className="text-lg font-semibold">Total Events</h3>
-        <p className="text-2xl">{overview.totalEvents}</p>
+    <div className="space-y-6 p-6">
+      {/* Main Statistics Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <StatCard title="Total Events" value={overview.totalEvents} />
+        <StatCard title="Total Participants" value={overview.totalParticipants} />
+        <StatCard title="Upcoming Events" value={overview.upcomingEventsCount} />
+        <StatCard title="Pending Proposals" value={overview.pendingEvents} />
+        <StatCard title="Approved Events" value={overview.approvedEvents} />
+        <StatCard title="Registered Users" value={overview.registeredUsers} />
+        <StatCard title="Featured Events" value={overview.featuredEventsCount} />
+        <StatCard title="Cancelled Events" value={overview.cancelledEvents} />
       </div>
-      <div className="bg-teal-600 text-gray-100 p-6 rounded-lg shadow dark:bg-gray-900">
-        <h3 className="text-lg font-semibold">Total Participants</h3>
-        <p className="text-2xl">{overview.totalParticipants}</p>
+
+      {/* Charts Section */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Department-wise Events Bar Chart */}
+        <SectionCard title="Events by Department">
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={departmentData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="events" fill="#10B981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </SectionCard>
+
+        {/* Event Type Pie Chart */}
+        <SectionCard title="Events by Type">
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={eventTypeData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  paddingAngle={5}
+                  dataKey="events"
+                  label
+                >
+                  {eventTypeData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </SectionCard>
       </div>
-      <div className="bg-teal-600 text-gray-100 p-6 rounded-lg shadow dark:bg-gray-900">
-        <h3 className="text-lg font-semibold">Upcoming Events</h3>
-        <p className="text-2xl">{overview.upcomingEvents}</p>
-      </div>
-      <div className="bg-teal-600 text-gray-100 p-6 rounded-lg shadow dark:bg-gray-900">
-        <h3 className="text-lg font-semibold">Pending Proposals</h3>
-        <p className="text-2xl">{overview.pendingEvents}</p>
-      </div>
-      <div className="bg-teal-600 text-gray-100 p-6 rounded-lg shadow dark:bg-gray-900">
-        <h3 className="text-lg font-semibold">Approved Events</h3>
-        <p className="text-2xl">{overview.approvedEvents}</p>
-      </div>
-      <div className="bg-teal-600 text-gray-100 p-6 rounded-lg shadow dark:bg-gray-900">
-        <h3 className="text-lg font-semibold">Registered Users</h3>
-        <p className="text-2xl">{overview.registeredUsers}</p>
+
+      {/* Additional Insights Section */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <SectionCard title="Event Insights">
+          <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              title="Virtual Events"
+              value={overview.virtualEventsCount}
+              small
+            />
+            <StatCard
+              title="Waitlisted"
+              value={overview.waitlistedParticipants}
+              small
+            />
+            <StatCard
+              title="Total Fees"
+              value={`₹${overview.totalRegistrationFees.toLocaleString()}`}
+              small
+            />
+            <StatCard
+              title="Paid Events"
+              value={overview.paidEventsCount}
+              small
+            />
+          </div>
+        </SectionCard>
+
+        <SectionCard title="Event Status Distribution">
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={eventStatusData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  paddingAngle={5}
+                  dataKey="value"
+                  label
+                >
+                  {eventStatusData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </SectionCard>
       </div>
     </div>
   );
 };
+
+const StatCard = ({ title, value, small = false }) => (
+  <div
+    className={`bg-teal-600 dark:bg-gray-900 text-gray-100 p-4 rounded-lg shadow ${
+      small ? "py-3" : ""
+    }`}
+  >
+    <h3 className={`${small ? "text-sm" : "text-lg"} font-semibold`}>{title}</h3>
+    <p className={`${small ? "text-xl" : "text-2xl"} mt-1 font-bold`}>{value}</p>
+  </div>
+);
+
+const SectionCard = ({ title, children }) => (
+  <div className="bg-white dark:bg-gray-950 p-6 rounded-lg shadow">
+    <h3 className="text-lg font-semibold mb-4 text-teal-600 dark:text-teal-400">
+      {title}
+    </h3>
+    {children}
+  </div>
+);
 
 export default AdminDashboardOverviewPage;

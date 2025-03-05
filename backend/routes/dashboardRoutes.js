@@ -26,7 +26,6 @@ router.get(
 router.get(
   "/stats/student",
   authenticateUser,
-  authorizeRoles("admin", "faculty", "student"),
   getStudentDashboardStats
 )
 

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../features/auth/authSlice";
+import { loginUser} from "../features/auth/authSlice"; 
 import toast from "react-hot-toast";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FcGoogle } from "react-icons/fc"; 
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -15,9 +16,9 @@ const LoginPage = () => {
   const { user, status } = useSelector((state) => state.auth);
   const loading = status === "loading";
 
+
   const handleLogin = async (e) => {
     e.preventDefault();
-
 
     dispatch(loginUser({ email, password, deviceToken: user.deviceToken }))
       .unwrap()
@@ -41,6 +42,10 @@ const LoginPage = () => {
       .catch((error) => {
         toast.error("Error logging in: " + error);
       });
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   return (
@@ -72,10 +77,7 @@ const LoginPage = () => {
               onClick={() => setShowPassword((prev) => !prev)}>
               {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
             </span>
-
           </div>
-
-
 
           <button
             type="submit"
@@ -85,8 +87,17 @@ const LoginPage = () => {
             {loading && <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin" />}
             {loading ? "Logging In..." : "Log In"}
           </button>
-
         </form>
+
+        {/* Google Login Button */}
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full p-2 mt-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md flex items-center justify-center gap-2"
+        >
+          <FcGoogle className="w-5 h-5" />
+          <span>Continue with Google</span>
+        </button>
+
         <p className="mt-4 text-center">
           Don't have an account?{" "}
           <a href="/signup" className="text-blue-500">

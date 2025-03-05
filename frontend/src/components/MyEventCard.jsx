@@ -17,6 +17,12 @@ const MyEventCard = ({ event }) => {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+
+
+  const handleCardClick = () => {
+    navigate(`/events/${event._id}`)
+  }
+
   const handleEdit = () => {
     navigate(`edit/${event._id}`);
     setIsOpen(false);
@@ -64,25 +70,31 @@ const MyEventCard = ({ event }) => {
   });
 
   return (
-    <div className="relative group bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col">
+    <div className="relative group bg-white dark:bg-gray-900 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col">
       <div className="relative">
         <img
-          className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
           src={event.image || "https://placehold.co/400"}
           alt={event.title}
+          onClick={handleCardClick}
         />
         <div className="absolute top-4 right-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-          {event.category}
+          {event.eventType}
         </div>
       </div>
 
       <div className="p-6 flex flex-col flex-grow">
         <div className="mb-4 flex-grow">
-          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+          <h3 onClick={handleCardClick} className="text-xl text-center font-bold text-gray-800 dark:text-white mb-2 hover:underline cursor-pointer">
             {event.title}
           </h3>
-          <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-4">
-            {event.description}
+          {event.department && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center">
+              {event.department}
+            </p>
+          )}
+          <p className="text-gray-600 text-center dark:text-gray-300 line-clamp-3 mb-4">
+            {event.shortDescription}
           </p>
 
           <div className="space-y-3">

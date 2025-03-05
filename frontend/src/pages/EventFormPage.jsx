@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { createEvent, updateEvent } from "../features/event/eventsSlice";
 import { CgSpinner } from "react-icons/cg";
 import { toast } from "react-hot-toast";
+import { useDropzone } from "react-dropzone";
 
 const EventFormPage = () => {
   const dispatch = useDispatch();
@@ -97,6 +98,31 @@ const EventFormPage = () => {
       });
     }
   }, [currentEvent]);
+
+
+  // Dropzone configurations
+  const imageDropzone = useDropzone({
+    accept: { "image/*": [".jpeg", ".jpg", ".png", ".gif"] },
+    multiple: false,
+    onDrop: acceptedFiles => {
+      setFormData({ ...formData, image: acceptedFiles[0] });
+    },
+  });
+
+  const galleryDropzone = useDropzone({
+    accept: { "image/*": [".jpeg", ".jpg", ".png", ".gif"] },
+    multiple: true,
+    onDrop: acceptedFiles => {
+      setFormData({ ...formData, gallery: [...formData.gallery, ...acceptedFiles] });
+    },
+  });
+
+  const attachmentsDropzone = useDropzone({
+    multiple: true,
+    onDrop: acceptedFiles => {
+      setFormData({ ...formData, attachments: [...formData.attachments, ...acceptedFiles] });
+    },
+  });
 
   const handleChange = (e) => {
     const { name, value, files, type, checked } = e.target;
@@ -357,14 +383,28 @@ const EventFormPage = () => {
           </div>
           <div className="mb-4">
             <label className="block mb-2">Event Attachments</label>
-            <input
-              type="file"
-              name="attachments"
-              onChange={handleChange}
-              multiple
-              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
-              disabled={loading}
-            />
+            <div
+              {...attachmentsDropzone.getRootProps()}
+              className={`border-2 border-dashed p-4 rounded cursor-pointer dark:border-gray-700 ${attachmentsDropzone.isDragActive ? "border-teal-600 bg-teal-50 dark:bg-teal-900" : ""
+                }`}
+            >
+              <input {...attachmentsDropzone.getInputProps()} />
+              <p className="text-center">
+                Drag & drop attachments here, or click to select
+              </p>
+            </div>
+            {formData.attachments.length > 0 && (
+              <div className="mt-4">
+                <p className="font-medium mb-2">Selected Attachments:</p>
+                <ul className="list-disc pl-5">
+                  {formData.attachments.map((file, index) => (
+                    <li key={index} className="break-all">
+                      {file.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           <div className="mb-4">
             <label className="block mb-2">Virtual Event Link</label>
@@ -462,39 +502,68 @@ const EventFormPage = () => {
           </div>
           <div className="mb-4">
             <label className="block mb-2">Event Image</label>
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={handleChange}
-              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
-              disabled={loading}
-            />
-            {formData.image && (
-              <div className="mb-4">
-                <p>Selected Image: {formData.image.name}</p>
-              </div>
-            )}
+            <div
+              {...imageDropzone.getRootProps()}
+              className={`border-2 border-dashed p-4 rounded cursor-pointer dark:border-gray-700 ${imageDropzone.isDragActive ? "border-teal-600 bg-teal-50 dark:bg-teal-900" : ""
+                }`}
+            >
+              <input {...imageDropzone.getInputProps()} />
+              {formData.image ? (
+                typeof formData.image === "string" ? (
+                  <div className="text-center">
+                    <p>Current Image:</p>
+                    <img
+                      src={formData.image}
+                      alt="Event"
+                      className="h-24 w-auto mx-auto mt-2"
+                    />
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                      Drag & drop a new image or click to replace
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-center">Selected: {formData.image.name}</p>
+                )
+              ) : (
+                <p className="text-center">
+                  Drag & drop an image here, or click to select
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="mb-4">
             <label className="block mb-2">Event Gallery Images</label>
-            <input
-              type="file"
-              name="gallery"
-              onChange={handleChange}
-              multiple
-              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
-              disabled={loading}
-            />
-            {formData.gallery.length > 0 && (
-              <div className="mt-2">
-                <p>Selected Gallery Images ({formData.gallery.length}):</p>
-                <ul className="list-disc pl-5">
+            <div
+              {...galleryDropzone.getRootProps()}
+              className={`border-2 border-dashed p-4 rounded cursor-pointer dark:border-gray-700 ${galleryDropzone.isDragActive ? "border-teal-600 bg-teal-50 dark:bg-teal-900" : ""
+                }`}
+            >
+              <input {...galleryDropzone.getInputProps()} />
+              <p className="text-center">
+                Drag & drop gallery images here, or click to select
+              </p>
+            </div>
+            {(formData.gallery.length > 0 || (currentEvent?.gallery?.length > 0)) && (
+              <div className="mt-4">
+                <p className="font-medium mb-2">Selected Gallery Images:</p>
+                <div className="grid grid-cols-3 gap-2">
                   {formData.gallery.map((file, index) => (
-                    <li key={index}>{file.name}</li>
+                    <div key={index} className="relative group">
+                      {typeof file === "string" ? (
+                        <img
+                          src={file}
+                          alt={`Gallery ${index}`}
+                          className="h-24 w-full object-cover rounded"
+                        />
+                      ) : (
+                        <div className="h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                          <span className="text-sm">{file.name}</span>
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
           </div>
@@ -638,7 +707,7 @@ const EventFormPage = () => {
                     onChange={(e) =>
                       handleAgendaChange(index, "title", e.target.value)
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
                   />
                 </div>
                 <div>
@@ -649,7 +718,7 @@ const EventFormPage = () => {
                     onChange={(e) =>
                       handleAgendaChange(index, "speaker", e.target.value)
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
                   />
                 </div>
                 <div>
@@ -660,7 +729,7 @@ const EventFormPage = () => {
                     onChange={(e) =>
                       handleAgendaChange(index, "startTime", e.target.value)
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
                   />
                 </div>
                 <div>
@@ -671,7 +740,7 @@ const EventFormPage = () => {
                     onChange={(e) =>
                       handleAgendaChange(index, "endTime", e.target.value)
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
                   />
                 </div>
               </div>

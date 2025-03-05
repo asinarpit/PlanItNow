@@ -133,6 +133,12 @@ const authSlice = createSlice({
     setDeviceToken: (state, action) => {
       state.user.deviceToken = action.payload;
     },
+    setCredentials: (state, action) => {
+      const { user, token } = action.payload;
+      state.user = { ...state.user, ...user };
+      state.token = token;
+    },
+    
   },
   extraReducers: (builder) => {
     builder
@@ -180,5 +186,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setDeviceToken } = authSlice.actions;
+export const { logout, setDeviceToken, setCredentials } = authSlice.actions;
 export default authSlice.reducer;

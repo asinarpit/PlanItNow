@@ -3,20 +3,25 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
-const eventRoutes = require("./routes/eventRoutes")
-const feedbackRoutes = require('./routes/feedbackRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
+const eventRoutes = require("./routes/eventRoutes");
+const feedbackRoutes = require("./routes/feedbackRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const userRoutes = require("./routes/userRoutes");
 require("./jobs/deleteOldNotifications");
+const passport = require("passport");
 
 dotenv.config();
 connectDB();
+
+require("./config/passport")(passport);
+
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);

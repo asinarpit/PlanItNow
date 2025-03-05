@@ -5,7 +5,7 @@ const eventSchema = new mongoose.Schema(
     // Basic Information
     title: { type: String, required: true },
     description: { type: String, required: true },
-    shortDescription: { type: String, maxlength: 150 }, // For event cards
+    shortDescription: { type: String, maxlength: 150 }, 
     eventType: {
       type: String,
       enum: ["Academic", "Cultural", "Sports", "Technical", "Workshop", "Seminar", "Other"],
@@ -17,28 +17,28 @@ const eventSchema = new mongoose.Schema(
       required: true,
     },
     date: { type: Date, required: true },
-    endDate: { type: Date }, // For multi-day events
+    endDate: { type: Date }, 
     location: { type: String, required: true },
-    virtualEventLink: { type: String }, // For hybrid or online events
+    virtualEventLink: { type: String }, 
 
     // Organizer Details
     organizer: {
-      name: { type: String, required: true }, // Club or department name
+      name: { type: String, required: true }, 
       contactEmail: { type: String },
       contactPhone: { type: String },
-      facultyCoordinator: { type: String }, // Faculty in charge
-      studentCoordinator: { type: String }, // Student in charge
+      facultyCoordinator: { type: String }, 
+      studentCoordinator: { type: String }, 
     },
 
     // Participants
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     capacity: { type: Number, required: true },
-    waitlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // For over-capacity events
-    eligibility: { type: String }, // E.g., "All students", "CSE students only"
+    waitlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], 
+    eligibility: { type: String }, 
 
     // Media
-    image: { type: String }, // Main event banner
-    gallery: [{ type: String }], // Additional images
+    image: { type: String }, 
+    gallery: [{ type: String }], 
     attachments: [
       {
         name: { type: String },
@@ -53,15 +53,15 @@ const eventSchema = new mongoose.Schema(
         description: { type: String },
         startTime: { type: Date, required: true },
         endTime: { type: Date, required: true },
-        speaker: { type: String }, // Name of the speaker or session host
+        speaker: { type: String }, 
       },
     ],
 
     // Registration Details
     registrationRequired: { type: Boolean, default: true },
     registrationDeadline: { type: Date },
-    registrationFee: { type: Number, default: 0 }, // Free by default
-    paymentLink: { type: String }, // Link for payment (if applicable)
+    registrationFee: { type: Number, default: 0 },
+    paymentLink: { type: String }, 
 
     // Social Media Links
     socialMedia: {
@@ -71,8 +71,8 @@ const eventSchema = new mongoose.Schema(
     },
 
     // Additional Metadata
-    targetAudience: { type: String }, // E.g., "1st Year Students", "All Students"
-    prerequisites: { type: String }, // E.g., "Basic knowledge of Python"
+    targetAudience: { type: String }, 
+    prerequisites: { type: String }, 
     isFeatured: { type: Boolean, default: false },
     status: {
       type: String,

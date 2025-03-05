@@ -15,10 +15,15 @@ const EventCard = ({ event }) => {
   );
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const isPaid = event.registrationRequired && event.registrationFee > 0;
 
   const handleToggleRegistration = async () => {
     if (loading) return;
     setLoading(true);
+    if (isPaid && event.paymentLink) {
+      window.open(event.paymentLink, '_blank');
+      return;
+    }
 
     try {
       const response = await axios.post(
@@ -42,15 +47,15 @@ const EventCard = ({ event }) => {
   // Date formatting
   const startDate = new Date(event.date);
   const endDate = event.endDate ? new Date(event.endDate) : null;
-  
-  const formatDate = (date) => 
+
+  const formatDate = (date) =>
     date.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
 
-  const dateDisplay = endDate && startDate.getTime() !== endDate.getTime() 
+  const dateDisplay = endDate && startDate.getTime() !== endDate.getTime()
     ? `${formatDate(startDate)} - ${formatDate(endDate)}`
     : formatDate(startDate);
 
@@ -63,8 +68,13 @@ const EventCard = ({ event }) => {
           alt={event.title}
           onClick={handleCardClick}
         />
-        <div className="absolute top-4 right-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md">
-          {event.eventType}
+        <div className="absolute top-4 right-4 flex gap-1 items-end">
+          <div className="bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md">
+            {event.eventType}
+          </div>
+          <div className={`bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md`}>
+            {isPaid ? 'Paid' : 'Free'}
+          </div>
         </div>
       </div>
 
@@ -105,17 +115,23 @@ const EventCard = ({ event }) => {
           <div className="mt-auto pt-4">
             <button
               onClick={handleToggleRegistration}
-              disabled={loading}
-              className={`w-full flex items-center justify-center py-3 px-6 rounded-md font-medium transition-all ${
-                isRegistered
+              disabled={loading || (isPaid && !event.paymentLink)}
+              className={`w-full flex items-center justify-center py-3 px-6 rounded-md font-medium transition-all ${isRegistered
                   ? "bg-transparent border-2 border-teal-600 text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900"
                   : "bg-teal-600 hover:bg-teal-700 text-white"
-              } ${loading ? "opacity-75 cursor-not-allowed" : ""}`}
+                } ${loading ? "opacity-75 cursor-not-allowed" : ""} ${isPaid && !event.paymentLink ? "cursor-not-allowed opacity-75" : ""
+                }`}
             >
               {loading ? (
                 <ImSpinner8 className="animate-spin mr-2" />
               ) : isRegistered ? (
                 "Unregister"
+              ) : isPaid ? (
+                event.paymentLink ? (
+                  "Register & Pay"
+                ) : (
+                  "Payment Unavailable"
+                )
               ) : (
                 "Register Now"
               )}

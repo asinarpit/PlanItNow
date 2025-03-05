@@ -6,6 +6,7 @@ import {
     markAllNotificationsAsRead,
 } from "../features/notification/notificationSlice";
 
+
 const NotificationsPage = () => {
     const dispatch = useDispatch();
     const { notifications, loading } = useSelector((state) => state.notifications);

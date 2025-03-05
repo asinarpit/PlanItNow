@@ -256,9 +256,34 @@ exports.updateEvent = async (req, res) => {
   try {
     let imageUrl = null;
     let galleryUrls = [];
+    let attachmentUrls = [];
 
     const parsedOrganizer = organizer ? JSON.parse(organizer) : null;
     const parsedSocialMedia = socialMedia ? JSON.parse(socialMedia) : null;
+
+    // Upload attachments
+    if (req.files && req.files.attachments) {
+      for (const file of req.files.attachments) {
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: "events/attachments" },
+            (error, result) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            }
+          );
+          uploadStream.end(file.buffer);
+        });
+
+        attachmentUrls.push({
+          name: file.originalname,
+          url: result.secure_url,
+        });
+      }
+    }
 
     // Upload main image
     if (req.files && req.files.image) {
@@ -334,6 +359,7 @@ exports.updateEvent = async (req, res) => {
         tags,
         ...(imageUrl && { image: imageUrl }),
         ...(galleryUrls.length > 0 && { gallery: galleryUrls }),
+        ...(attachmentUrls.length > 0 && { attachments: attachmentUrls }),
       },
       { new: true }
     );

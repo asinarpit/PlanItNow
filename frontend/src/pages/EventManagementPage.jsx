@@ -7,11 +7,43 @@ import Skeleton from "react-loading-skeleton";
 import { RxCaretSort } from "react-icons/rx";
 import { FaEdit, FaTrash, FaCommentDots, FaUsers, FaInfoCircle } from "react-icons/fa";
 
+
+
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, message }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+        <p className="text-lg mb-4">{message}</p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={onClose}
+            className="border border-teal-600 text-teal-600 px-4 py-2 rounded hover:bg-teal-600 hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
 const EventManagementPage = () => {
   const [sortConfig, setSortConfig] = useState({ key: "date", order: "asc" });
   const [searchQuery, setSearchQuery] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState(null);
   const { events, loading } = useSelector((state) => state.events);
 
 
@@ -33,6 +65,27 @@ const EventManagementPage = () => {
       toast.success("Event deleted successfully!");
     } catch (error) {
       toast.error("Failed to delete the event.");
+    } finally {
+      setIsModalOpen(false);
+    }
+  };
+
+
+  const openDeleteModal = (eventId) => {
+    setEventToDelete(eventId);
+    setIsModalOpen(true);
+  };
+
+
+  const closeDeleteModal = () => {
+    setIsModalOpen(false);
+    setEventToDelete(null);
+  };
+
+
+  const confirmDelete = () => {
+    if (eventToDelete) {
+      handleDelete(eventToDelete);
     }
   };
 
@@ -63,7 +116,7 @@ const EventManagementPage = () => {
   };
 
   const handleViewDetails = (eventId) => {
-    navigate(`${eventId}`); // Adjust the route as per your setup
+    navigate(`${eventId}`);
   };
 
   const handleSort = (key) => {
@@ -74,7 +127,7 @@ const EventManagementPage = () => {
   };
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value.toLowerCase()); // Update search query
+    setSearchQuery(e.target.value.toLowerCase());
   };
 
   // Filter events based on search query
@@ -103,15 +156,13 @@ const EventManagementPage = () => {
         <h2 className="text-2xl font-bold text-center mb-6">Events</h2>
         <div className="flex justify-between items-center mb-4">
           {/* Search Box */}
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Search events by title, description, location, category, or creator..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="border dark:border-gray-700 rounded px-4 py-2 w-[450px] bg-white dark:bg-gray-900 text-sm focus:ring-1 focus:ring-teal-600 focus:outline-none"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Search events by title, description, location, category, or creator..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="border dark:border-gray-700 rounded px-4 py-2 w-[450px] bg-white dark:bg-gray-900 text-sm focus:ring-1 focus:ring-teal-600 focus:outline-none"
+          />
           <button
             onClick={handleAddEvent}
             className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 text-sm"
@@ -119,6 +170,7 @@ const EventManagementPage = () => {
             Add Event
           </button>
         </div>
+
 
 
 
@@ -279,7 +331,7 @@ const EventManagementPage = () => {
                           </span>
                         </button>
                         <button
-                          onClick={() => handleDelete(event._id)}
+                          onClick={() => openDeleteModal(event._id)}
                           className="relative z-10 text-red-500 hover:underline text-sm flex items-center group"
                         >
                           <FaTrash />
@@ -323,6 +375,12 @@ const EventManagementPage = () => {
           </table>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        message="Are you sure you want to delete this event?"
+      />
     </div>
   );
 };

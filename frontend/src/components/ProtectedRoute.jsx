@@ -12,7 +12,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
     } else if (allowedRoles && !allowedRoles.includes(user?.role)) {
       toast.error("You don't have permission to access this page.");
     }
-  }, [user, allowedRoles]);
+  }, [user.id, allowedRoles]);
 
 
   if (!user?.id) {

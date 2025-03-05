@@ -354,13 +354,13 @@ const UserManagementPage = () => {
               <div className="flex justify-end gap-4">
                 <button
                   onClick={closeDeleteModal}
-                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                  className="border border-teal-600 text-teal-600 px-4 py-2 rounded hover:bg-teal-600 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteUser}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-red-600"
                 >
                   Delete
                 </button>

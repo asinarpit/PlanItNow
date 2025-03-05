@@ -23,7 +23,7 @@ try {
 }
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode>
     <ThemeProvider>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
@@ -34,5 +34,5 @@ createRoot(document.getElementById('root')).render(
     </ThemeProvider>
 
 
-  </StrictMode>,
+  // </StrictMode>,
 )

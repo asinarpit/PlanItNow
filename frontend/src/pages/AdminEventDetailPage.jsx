@@ -2,17 +2,42 @@ import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FaFacebook, FaInstagram, FaTwitter, FaRegCalendar, FaMapMarkerAlt, FaUsers, FaLink, FaFilePdf, FaImage, FaStar } from "react-icons/fa";
+import toast from "react-hot-toast";
+import { ImSpinner8 } from "react-icons/im";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const AdminEventDetailPage = () => {
     const { eventId } = useParams();
     const [event, setEvent] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        axios.get(`${BASE_URL}/events/${eventId}`).then((res) => setEvent(res.data));
+        const fetchEvent = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(`${BASE_URL}/events/${eventId}`);
+                setEvent(response.data);
+            } catch (error) {
+                console.error('Error fetching event details:', error);
+                toast.error('Failed to load event details. Please try again.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEvent();
     }, [eventId]);
 
-    if (!event) return <div className="text-center p-8">Loading event details...</div>;
+    if (loading) {
+        return <div className="flex justify-center items-center h-screen">
+            <ImSpinner8 className="animate-spin text-4xl text-teal-600" />
+        </div>;
+    }
+
+    if (!event) {
+        return <div className="text-center p-8">No event details found.</div>;
+    }
+
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
@@ -24,7 +49,7 @@ const AdminEventDetailPage = () => {
                             {event.title}
                             {event.isFeatured && <FaStar className="text-yellow-400" />}
                         </h1>
-                        <p className="text-gray-600 mt-2">{event.description}</p>
+                        <p className="text-gray-400 mt-2">{event.description}</p>
                         <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
                             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
                                 {event.eventType}
@@ -78,8 +103,8 @@ const AdminEventDetailPage = () => {
                         <div className="space-y-4">
                             <div>
                                 <h3 className="font-medium">{event.organizer.name}</h3>
-                                <p className="text-sm text-gray-600">{event.organizer.contactEmail}</p>
-                                <p className="text-sm text-gray-600">{event.organizer.contactPhone}</p>
+                                <p className="text-sm text-gray-400">{event.organizer.contactEmail}</p>
+                                <p className="text-sm text-gray-400">{event.organizer.contactPhone}</p>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -120,7 +145,7 @@ const AdminEventDetailPage = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Payment Link</p>
-                                <a href={event.paymentLink} className="text-blue-600 hover:underline">
+                                <a href={event.paymentLink} target="_blank" className="text-teal-600 hover:underline">
                                     View Payment
                                 </a>
                             </div>
@@ -132,17 +157,17 @@ const AdminEventDetailPage = () => {
                         <h2 className="text-xl font-semibold mb-4">Social Media</h2>
                         <div className="flex gap-4">
                             {event.socialMedia.facebook && (
-                                <a href={event.socialMedia.facebook} className="text-blue-600 hover:text-blue-800">
+                                <a href={event.socialMedia.facebook} target="_blank" className="text-blue-600 hover:text-blue-800">
                                     <FaFacebook size={24} />
                                 </a>
                             )}
                             {event.socialMedia.instagram && (
-                                <a href={event.socialMedia.instagram} className="text-pink-600 hover:text-pink-800">
+                                <a href={event.socialMedia.instagram} target="_blank" className="text-pink-600 hover:text-pink-800">
                                     <FaInstagram size={24} />
                                 </a>
                             )}
                             {event.socialMedia.twitter && (
-                                <a href={event.socialMedia.twitter} className="text-blue-400 hover:text-blue-600">
+                                <a href={event.socialMedia.twitter} target="_blank" className="text-blue-400 hover:text-blue-600">
                                     <FaTwitter size={24} />
                                 </a>
                             )}
@@ -158,9 +183,9 @@ const AdminEventDetailPage = () => {
                         <div className="space-y-4">
                             {event?.agenda?.length > 0 ? (
                                 event.agenda.map((item, index) => (
-                                    <div key={index} className="border-l-4 border-blue-500 pl-4">
+                                    <div key={index} className="border-l-4 border-teal-500 pl-4">
                                         <h3 className="font-medium">{item.title}</h3>
-                                        <p className="text-sm text-gray-600">{item.description}</p>
+                                        <p className="text-sm text-gray-400">{item.description}</p>
                                         <div className="text-sm text-gray-500 mt-1">
                                             <p>{item.speaker}</p>
                                             <p>
@@ -227,7 +252,7 @@ const AdminEventDetailPage = () => {
                                             key={index}
                                             href={file.url}
                                             target="_blank"
-                                            className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                                            className="flex items-center gap-2 text-teal-600 hover:text-teal-700"
                                         >
                                             <FaFilePdf />
                                             {file.name}
@@ -291,7 +316,8 @@ const AdminEventDetailPage = () => {
                             {event.virtualEventLink ? (
                                 <a
                                     href={event.virtualEventLink}
-                                    className="text-blue-600 hover:underline dark:text-blue-400"
+                                    target="_blank"
+                                    className="text-teal-600 hover:underline"
                                 >
                                     Join Online
                                 </a>
@@ -304,7 +330,7 @@ const AdminEventDetailPage = () => {
             </div>
 
             {/* Metadata */}
-            <div className="text-sm text-gray-500 text-center">
+            <div className="text-sm text-gray-400 text-center">
                 Created by {event.createdBy.name} on {new Date(event.createdAt).toLocaleDateString()}
             </div>
         </div>
