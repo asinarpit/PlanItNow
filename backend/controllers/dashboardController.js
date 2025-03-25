@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const Event = require("../models/Event");
+const Payment = require("../models/Payment"); // Import Payment model
 
 // Helper function to parse aggregation results
 const getFirstAggregationValue = (aggregationResult, field) =>
@@ -23,7 +24,7 @@ exports.getAdminDashboardStats = async (req, res) => {
       featuredEventsCount,
       virtualEventsCount,
       totalWaitlisted,
-      feesSummary,
+      feesSummary, // Now based on Payment model
     ] = await Promise.all([
       User.countDocuments(),
       Event.countDocuments(),
@@ -45,14 +46,14 @@ exports.getAdminDashboardStats = async (req, res) => {
         { $unwind: "$waitlist" },
         { $group: { _id: null, count: { $sum: 1 } } },
       ]),
-      Event.aggregate([
+      // Updated fees summary using Payment model
+      Payment.aggregate([
+        { $match: { status: "paid" } },
         {
           $group: {
             _id: null,
-            totalFees: { $sum: "$registrationFee" },
-            paidEventsCount: {
-              $sum: { $cond: [{ $gt: ["$registrationFee", 0] }, 1, 0] },
-            },
+            totalFees: { $sum: "$amount" },
+            paidEventsCount: { $sum: 1 }, // Count of successful payments
           },
         },
       ]),
@@ -76,6 +77,7 @@ exports.getAdminDashboardStats = async (req, res) => {
         totalWaitlisted,
         "count"
       ),
+      // Updated payment metrics
       totalRegistrationFees: getFirstAggregationValue(feesSummary, "totalFees"),
       paidEventsCount: getFirstAggregationValue(feesSummary, "paidEventsCount"),
     });
@@ -94,7 +96,8 @@ exports.getFacultyDashboardStats = async (req, res) => {
       participantsAgg,
       eventsByType,
       waitlistedAgg,
-      revenueAgg,
+      paymentRevenueAgg, // Revenue from Payment model
+      avgParticipantsAgg, // Avg participants from Event
       upcomingEvents,
       pendingApprovals,
       approvedEvents,
@@ -115,12 +118,26 @@ exports.getFacultyDashboardStats = async (req, res) => {
         { $unwind: "$waitlist" },
         { $group: { _id: null, count: { $sum: 1 } } },
       ]),
+      // Payment-based revenue calculation
+      Payment.aggregate([
+        {
+          $lookup: {
+            from: "events",
+            localField: "event",
+            foreignField: "_id",
+            as: "eventData",
+          },
+        },
+        { $unwind: "$eventData" },
+        { $match: { "eventData.createdBy": facultyId, status: "paid" } },
+        { $group: { _id: null, totalRevenue: { $sum: "$amount" } } },
+      ]),
+      // Avg participants from Event
       Event.aggregate([
         { $match: { createdBy: facultyId } },
         {
           $group: {
             _id: null,
-            totalRevenue: { $sum: "$registrationFee" },
             avgParticipants: { $avg: { $size: "$participants" } },
           },
         },
@@ -144,11 +161,12 @@ exports.getFacultyDashboardStats = async (req, res) => {
       totalRegistrations: getFirstAggregationValue(registrationsAgg, "count"),
       eventsByTypeCreated: eventsByType,
       waitlistedParticipants: getFirstAggregationValue(waitlistedAgg, "count"),
-      totalRevenue: getFirstAggregationValue(revenueAgg, "totalRevenue"),
+      // Updated revenue and avg participants
+      totalRevenue: getFirstAggregationValue(paymentRevenueAgg, "totalRevenue"),
       avgParticipants: Number(
-        (getFirstAggregationValue(revenueAgg, "avgParticipants") || 0).toFixed(
-          1
-        )
+        (
+          getFirstAggregationValue(avgParticipantsAgg, "avgParticipants") || 0
+        ).toFixed(1)
       ),
     });
   } catch (error) {
@@ -167,7 +185,7 @@ exports.getStudentDashboardStats = async (req, res) => {
       pastEvents,
       pendingRegistrations,
       waitlistedCount,
-      feeSummary,
+      feeSummary, // Now based on Payment model
       eventsByCategory,
     ] = await Promise.all([
       Event.countDocuments({ participants: studentId }),
@@ -181,15 +199,14 @@ exports.getStudentDashboardStats = async (req, res) => {
       }),
       Event.countDocuments({ participants: studentId, status: "pending" }),
       Event.countDocuments({ waitlist: studentId }),
-      Event.aggregate([
-        { $match: { participants: studentId } },
+      // Payment-based fee summary
+      Payment.aggregate([
+        { $match: { user: studentId, status: "paid" } },
         {
           $group: {
             _id: null,
-            totalPaid: { $sum: "$registrationFee" },
-            paidEventsCount: {
-              $sum: { $cond: [{ $gt: ["$registrationFee", 0] }, 1, 0] },
-            },
+            totalPaid: { $sum: "$amount" },
+            paidEventsCount: { $sum: 1 },
           },
         },
       ]),
@@ -205,6 +222,7 @@ exports.getStudentDashboardStats = async (req, res) => {
       pastEvents,
       pendingRegistrations,
       waitlistedCount,
+      // Updated fee metrics
       totalFeesPaid: getFirstAggregationValue(feeSummary, "totalPaid"),
       paidEventsCount: getFirstAggregationValue(feeSummary, "paidEventsCount"),
       eventsByCategory,

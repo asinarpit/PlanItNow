@@ -87,3 +87,38 @@ input[type="checkbox"]:checked::after {
   @apply text-white text-xs font-bold flex items-center justify-center;
 }
 
+
+.swiper-slide {
+  height: auto; /* Makes sure all slides have same height */
+}
+
+/* Custom pagination styles */
+.swiper-pagination-bullet {
+  @apply w-3 h-3 bg-gray-300 opacity-100 transition-all duration-300;
+}
+
+.swiper-pagination-bullet-active {
+  @apply w-8 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full;
+}
+
+.dark .swiper-pagination-bullet {
+  @apply bg-gray-600;
+}
+
+.dark .swiper-pagination-bullet-active {
+  @apply bg-gradient-to-r from-teal-400 to-teal-500;
+}
+
+/* Navigation button hover effects */
+.swiper-button-prev:hover .fi-chevron-left,
+.swiper-button-next:hover .fi-chevron-right {
+  @apply transform transition-transform duration-300;
+}
+
+.swiper-button-prev:hover .fi-chevron-left {
+  @apply -translate-x-0.5;
+}
+
+.swiper-button-next:hover .fi-chevron-right {
+  @apply translate-x-0.5;
+}

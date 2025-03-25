@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .header {
+      background-color: {{THEME_COLOR}};
+      padding: 2rem;
+      text-align: center;
+      color: white;
+      border-radius: 0 0 20px 20px;
+    }
+    .content {
+      padding: 2rem;
+    }
+    .section-title {
+      color: {{THEME_COLOR}};
+      border-bottom: 2px solid {{THEME_COLOR}};
+      padding-bottom: 0.5rem;
+      margin: 1.5rem 0;
+    }
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    .details-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #ddd;
+    }
+    .footer {
+      text-align: center;
+      color: {{THEME_COLOR}};
+      margin-top: 2rem;
+      padding: 1rem;
+      border-top: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>{{company}}</h1>
+    <h2>Payment Invoice</h2>
+  </div>
+
+  <div class="content">
+    <table class="details-table">
+      <tr>
+        <td>Invoice Number:</td>
+        <td>{{payment.paymentId}}</td>
+        <td>Date:</td>
+        <td>{{date}}</td>
+      </tr>
+      <tr>
+        <td>Customer Name:</td>
+        <td>{{user.name}}</td>
+        <td>Customer Email:</td>
+        <td>{{user.email}}</td>
+      </tr>
+    </table>
+
+    <div class="section-title">Event Details</div>
+    <table class="details-table">
+      <tr>
+        <td>Event Title:</td>
+        <td>{{event.title}}</td>
+      </tr>
+      <tr>
+        <td>Event Date:</td>
+        <td>{{formatDate event.date}}</td>
+      </tr>
+    </table>
+
+    <div class="section-title">Payment Details</div>
+    <table class="details-table">
+      <tr>
+        <td>Amount:</td>
+        <td>₹{{payment.amount}}</td>
+      </tr>
+      <tr>
+        <td>Payment Status:</td>
+        <td>{{payment.status}}</td>
+      </tr>
+      <tr>
+        <td>Transaction ID:</td>
+        <td>{{payment.paymentId}}</td>
+      </tr>
+    </table>
+
+    <div class="footer">
+      Thank you for choosing {{company}}!
+    </div>
+  </div>
+</body>
+</html>

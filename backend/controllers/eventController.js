@@ -1,6 +1,9 @@
 const cloudinary = require("../config/cloudinary");
 const Event = require("../models/Event");
 const User = require("../models/User");
+const Payment = require("../models/Payment");
+const sendNotification = require("../services/notificationService");
+const Notification = require("../models/Notification");
 
 // Fetch all events
 exports.getAllEvents = async (req, res) => {
@@ -93,7 +96,6 @@ exports.createEvent = async (req, res) => {
     registrationRequired,
     registrationDeadline,
     registrationFee,
-    paymentLink,
     targetAudience,
     prerequisites,
     agenda,
@@ -204,7 +206,6 @@ exports.createEvent = async (req, res) => {
       registrationRequired,
       registrationDeadline,
       registrationFee,
-      paymentLink,
       targetAudience,
       prerequisites,
       agenda,
@@ -215,6 +216,30 @@ exports.createEvent = async (req, res) => {
       attachments: attachmentUrls,
       createdBy,
     });
+
+    // Send notification to all users about the new event
+    try {
+      const users = await User.find({}).select("_id deviceTokens");
+      const deviceTokens = users.flatMap((user) => user.deviceTokens || []);
+
+      if (deviceTokens.length > 0) {
+        await sendNotification(
+          "New Event Created",
+          `A new event "${title}" has been added. Check it out!`,
+          deviceTokens
+        );
+      }
+
+      // Save notification to the database
+      await Notification.create({
+        title: "New Event Created",
+        body: `A new event "${title}" has been added.`,
+        type: "all",
+        recipients: users.map((user) => user._id),
+      });
+    } catch (error) {
+      console.error("Error sending notification for new event:", error);
+    }
 
     res.status(201).json(newEvent);
   } catch (error) {
@@ -241,7 +266,6 @@ exports.updateEvent = async (req, res) => {
     registrationRequired,
     registrationDeadline,
     registrationFee,
-    paymentLink,
     targetAudience,
     prerequisites,
     agenda,
@@ -351,7 +375,6 @@ exports.updateEvent = async (req, res) => {
         registrationRequired,
         registrationDeadline,
         registrationFee,
-        paymentLink,
         targetAudience,
         prerequisites,
         agenda,
@@ -405,60 +428,8 @@ exports.updateEventStatus = async (req, res) => {
   }
 };
 
-// Fetch new events (events created recently)
-exports.getNewEvents = async (req, res) => {
-  try {
-    const newEvents = await Event.find({
-      createdAt: { $gte: new Date() - 7 * 24 * 60 * 60 * 1000 },
-    }) // events created in the last 7 days
-      .populate("participants")
-      .populate("createdBy")
-      .populate("waitlist");
-    res.status(200).json(newEvents);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-};
 
-// Fetch upcoming events
-exports.getUpcomingEvents = async (req, res) => {
-  try {
-    const upcomingEvents = await Event.find({ date: { $gt: new Date() } })
-      .populate("participants")
-      .populate("createdBy")
-      .populate("waitlist");
-    res.status(200).json(upcomingEvents);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-};
 
-// Fetch featured events (events marked as featured)
-exports.getFeaturedEvents = async (req, res) => {
-  try {
-    const featuredEvents = await Event.find({ isFeatured: true })
-      .populate("participants")
-      .populate("createdBy")
-      .populate("waitlist");
-    res.status(200).json(featuredEvents);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-};
-
-// Fetch events by category
-exports.getCategoryEvents = async (req, res) => {
-  const { category } = req.params;
-  try {
-    const categoryEvents = await Event.find({ eventType: category })
-      .populate("participants")
-      .populate("createdBy")
-      .populate("waitlist");
-    res.status(200).json(categoryEvents);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-};
 
 // Toggle the featured status of an event
 exports.featureEvent = async (req, res) => {
@@ -493,6 +464,7 @@ exports.featureEvent = async (req, res) => {
 };
 
 // Register or unregister a student for an event
+
 exports.toggleRegistration = async (req, res) => {
   const { id } = req.params;
 
@@ -504,51 +476,79 @@ exports.toggleRegistration = async (req, res) => {
     const event = await Event.findById(id);
     const user = await User.findById(req.user.id);
 
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!event) return res.status(404).json({ message: "Event not found" });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const isRegistered = event.participants.includes(req.user.id);
+    const isOnWaitlist = event.waitlist.includes(req.user.id);
 
-    if (!isRegistered) {
-      if (event.participants.length >= event.capacity) {
-        event.waitlist.push(req.user.id);
-        await event.save();
-        return res.status(200).json({
-          message: "Event is full. Added to waitlist.",
-          event,
-        });
+    // Unregister user if already registered
+    if (isRegistered || isOnWaitlist) {
+      event.participants.pull(req.user.id);
+      event.waitlist.pull(req.user.id);
+      user.eventsParticipated.pull(event._id);
+
+      // Delete payment record if exists
+      if (event.registrationFee > 0) {
+        await Payment.deleteOne({ user: req.user.id, event: event._id });
       }
 
-      event.participants.push(req.user.id);
-      user.eventsParticipated.push(event._id);
       await event.save();
       await user.save();
       return res.status(200).json({
-        message: "Registration successful",
+        message: "Unregistered from event successfully",
         event,
       });
     }
 
-    event.participants = event.participants.filter(
-      (participant) => participant.toString() !== req.user.id
-    );
-    user.eventsParticipated = user.eventsParticipated.filter(
-      (eventId) => eventId.toString() !== event._id.toString()
-    );
+    // Register user
+    if (event.participants.length >= event.capacity) {
+      event.waitlist.push(req.user.id);
+      await event.save();
+      return res.status(200).json({
+        message: "Added to waitlist as event is full",
+        event,
+      });
+    }
+
+    // Payment validation for paid events
+    if (event.registrationFee > 0) {
+      const validPayment = await Payment.findOne({
+        user: req.user.id,
+        event: event._id,
+        status: "paid",
+      });
+
+      if (!validPayment) {
+        return res.status(403).json({
+          message:
+            "Payment required for event registration. Please complete payment first.",
+        });
+      }
+    }
+
+    // Registration capacity check
+    if (event.participants.length >= event.capacity) {
+      event.waitlist.push(req.user.id);
+      await event.save();
+      return res.status(200).json({
+        message: "Added to waitlist as event is full",
+        event,
+      });
+    }
+
+    event.participants.push(req.user.id);
+    user.eventsParticipated.push(event._id);
+
     await event.save();
     await user.save();
 
     res.status(200).json({
-      message: "Unregistration successful",
+      message: "Registered for event successfully",
       event,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -609,6 +609,298 @@ exports.deleteEvent = async (req, res) => {
 
     await Event.findByIdAndDelete(id);
     res.status(200).json({ message: "Event deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Get paginated and filtered events (for events listing page)
+exports.getPaginatedEvents = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      sort = "newest",
+      category,
+      status,
+      search,
+      upcoming,
+      featured,
+      new: newEvents,
+    } = req.query;
+
+    const query = {};
+
+    const sortMapping = {
+      newest: "-createdAt",
+      oldest: "createdAt",
+      popular: "-participantsCount"
+    };
+
+    const sortBy = sortMapping[sort] || "-createdAt";
+
+    // Category filter
+    if (category) {
+      query.eventType = { $in: category.split(",") };
+    }
+
+    // Status filter
+    if (status) {
+      query.status = { $in: status.split(",") };
+    }
+
+    // Upcoming events filter
+    if (upcoming === "true") {
+      query.date = { $gt: new Date() };
+    }
+
+    // Featured filter
+    if (featured === "true") {
+      query.isFeatured = true;
+    }
+
+    // New events filter (created in last 7 days)
+    if (newEvents === "true") {
+      query.createdAt = {
+        $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      };
+    }
+
+    // Search query
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { tags: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sort: sortBy,
+      populate: ["participants", "createdBy", "waitlist"],
+    };
+
+    const result = await Event.paginate(query, options);
+
+    res.status(200).json({
+      events: result.docs,
+      total: result.totalDocs,
+      limit: result.limit,
+      page: result.page,
+      pages: result.totalPages,
+      hasNext: result.hasNextPage,
+      hasPrev: result.hasPrevPage,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+exports.getEventCategories = async (req, res) => {
+  try {
+    const categories = await Event.distinct("eventType");
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Search events with full-text search
+exports.searchEvents = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    const results = await Event.find(
+      { $text: { $search: query } },
+      { score: { $meta: "textScore" } }
+    )
+      .sort({ score: { $meta: "textScore" } })
+      .limit(10)
+      .populate("createdBy");
+
+    res.status(200).json(results);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Get event statistics
+exports.getEventStats = async (req, res) => {
+  try {
+    const stats = await Event.aggregate([
+      {
+        $facet: {
+          totalEvents: [{ $count: "count" }],
+          eventsByStatus: [{ $group: { _id: "$status", count: { $sum: 1 } } }],
+          eventsByType: [{ $group: { _id: "$eventType", count: { $sum: 1 } } }],
+          participationStats: [
+            {
+              $project: {
+                participantsCount: { $size: "$participants" },
+                waitlistCount: { $size: "$waitlist" },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalParticipants: { $sum: "$participantsCount" },
+                totalWaitlist: { $sum: "$waitlistCount" },
+                avgParticipation: { $avg: "$participantsCount" },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    res.status(200).json(stats[0]);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Export events data
+exports.exportEvents = async (req, res) => {
+  try {
+    const events = await Event.find().lean();
+
+    // Transform data for CSV/excel export
+    const data = events.map((event) => ({
+      Title: event.title,
+      Type: event.eventType,
+      Status: event.status,
+      Date: event.date,
+      Participants: event.participants.length,
+      Capacity: event.capacity,
+      Created_By: event.createdBy,
+      Registration_Fee: event.registrationFee,
+      Department: event.department,
+    }));
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Send notification to event participants
+exports.sendEventNotification = async (req, res) => {
+  const { id } = req.params;
+  const { message } = req.body;
+
+  try {
+    const event = await Event.findById(id).populate("participants");
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    const participants = event.participants;
+    const deviceTokens = participants.flatMap((p) => p.deviceTokens || []);
+
+    if (deviceTokens.length > 0) {
+      await sendNotification(
+        `Update for ${event.title}`,
+        message,
+        deviceTokens
+      );
+    }
+
+    // Save notification to database
+    await Notification.create({
+      title: `Event Update: ${event.title}`,
+      body: message,
+      type: "event",
+      recipients: participants.map((p) => p._id),
+      referenceId: event._id,
+    });
+
+    res.status(200).json({ message: "Notification sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Admin approval for events
+exports.approveEvent = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const event = await Event.findByIdAndUpdate(
+      id,
+      {
+        status: "approved",
+        approvedBy: req.user.id,
+        approvedAt: new Date(),
+      },
+      { new: true }
+    );
+
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Notify event creator
+    const creator = await User.findById(event.createdBy);
+    if (creator && creator.deviceTokens.length > 0) {
+      await sendNotification(
+        "Event Approved",
+        `Your event "${event.title}" has been approved`,
+        creator.deviceTokens
+      );
+    }
+
+    res.status(200).json(event);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Check-in participant
+exports.checkInParticipant = async (req, res) => {
+  const { eventId, userId } = req.params;
+
+  try {
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    if (!event.participants.includes(userId)) {
+      return res
+        .status(400)
+        .json({ message: "User not registered for this event" });
+    }
+
+    if (event.checkedInParticipants.includes(userId)) {
+      return res.status(400).json({ message: "User already checked in" });
+    }
+
+    event.checkedInParticipants.push(userId);
+    await event.save();
+
+    res.status(200).json({ message: "Check-in successful", event });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Get similar events
+exports.getSimilarEvents = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const currentEvent = await Event.findById(id);
+    if (!currentEvent)
+      return res.status(404).json({ message: "Event not found" });
+
+    const similarEvents = await Event.find({
+      $or: [
+        { eventType: currentEvent.eventType },
+        { department: currentEvent.department },
+        { tags: { $in: currentEvent.tags } },
+      ],
+      _id: { $ne: id },
+    })
+      .limit(5)
+      .populate("createdBy");
+
+    res.status(200).json(similarEvents);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchEvents } from "../features/event/eventsSlice";
+import { useSelector } from "react-redux";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
@@ -11,36 +10,54 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ParticipantsPage = () => {
     const { eventId } = useParams();
     const { token } = useSelector(state => state.auth);
-    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { events, loading } = useSelector((state) => state.events);
+
+    const [eventData, setEventData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [fetchError, setFetchError] = useState(false);
 
     const [notificationTitle, setNotificationTitle] = useState("");
     const [notificationBody, setNotificationBody] = useState("");
     const [showModal, setShowModal] = useState(false);
 
-    const event = events.find((event) => event._id === eventId);
+    useEffect(() => {
+        const fetchEvent = async () => {
+            try {
+                const response = await axios.get(`${BASE_URL}/events/${eventId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setEventData(response.data);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching event:", error);
+                toast.error("Failed to load event data");
+                setFetchError(true);
+                setLoading(false);
+            }
+        };
+
+        fetchEvent();
+    }, [eventId, token]);
 
     useEffect(() => {
-        if (event) {
-            const defaultTitle = `New Notification for ${event.title}`;
-            const defaultBody = `We have important updates for you regarding the event: ${event.title}. Please check your event details for more information.`;
+        if (eventData) {
+            const defaultTitle = `New Notification for ${eventData.title}`;
+            const defaultBody = `We have important updates for you regarding the event: ${eventData.title}. Please check your event details for more information.`;
             setNotificationTitle(defaultTitle);
             setNotificationBody(defaultBody);
         }
-    }, [event]);
-
-    useEffect(() => {
-        dispatch(fetchEvents());
-    }, [dispatch]);
-
-
-    if (!event)
-        return <p>No event found. Please return to the <a href="/events">events page</a>.</p>;
+    }, [eventData]);
 
     const handleSendNotification = async () => {
         try {
-            const deviceTokens = event.participants.map((user) => user.deviceToken).filter(Boolean);
+            if (!eventData?.participants?.length) {
+                toast.error("No participants found for this event");
+                return;
+            }
+
+            const deviceTokens = eventData.participants
+                .map((user) => user.deviceToken)
+                .filter(Boolean);
 
             if (deviceTokens.length === 0) {
                 toast.error("No valid device tokens found.");
@@ -54,9 +71,7 @@ const ParticipantsPage = () => {
                     body: notificationBody,
                     deviceTokens,
                 },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                { headers: { Authorization: `Bearer ${token}` } }
             );
 
             toast.success("Notification sent successfully!");
@@ -67,9 +82,13 @@ const ParticipantsPage = () => {
         }
     };
 
-    const openModal = () => {
-        setShowModal(true);
-    };
+    if (fetchError) {
+        return <p>Error loading event. Please try again later.</p>;
+    }
+
+    if (!loading && !eventData) {
+        return <p>No event found. Please return to the <a href="/events">events page</a>.</p>;
+    }
 
     return (
         <div>
@@ -81,14 +100,17 @@ const ParticipantsPage = () => {
                     Go Back
                 </button>
                 <button
-                    onClick={openModal}
+                    onClick={() => setShowModal(true)}
                     className="px-4 py-2 text-sm bg-teal-600 text-white rounded-sm hover:bg-teal-700"
+                    disabled={!eventData?.participants?.length}
                 >
                     Notify All
                 </button>
             </div>
 
-            <h2 className="text-2xl font-bold mb-4">Participants for {event.title}</h2>
+            <h2 className="text-2xl font-bold mb-4">
+                {loading ? <Skeleton width={300} /> : `Participants for ${eventData?.title}`}
+            </h2>
 
             <div className="overflow-x-auto bg-white shadow-md rounded-lg">
                 <table className="min-w-full table-auto dark:bg-gray-900">
@@ -101,35 +123,28 @@ const ParticipantsPage = () => {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <>
-                                {[...Array(10)].map((_, index) => (
-                                    <tr key={index} className="border-b dark:border-gray-700">
-                                        <td className="p-3">
-                                            <Skeleton width={150}/>
-                                        </td>
-                                        <td className="py-3 px-6 text-sm">
-                                            <Skeleton width={150} />
-                                        </td>
-                                        <td className="py-3 px-6 text-sm">
-                                            <Skeleton width={100} />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </>
-                        ) : event.participants.length === 0 ?  (
+                            [...Array(10)].map((_, index) => (
+                                <tr key={index} className="border-b dark:border-gray-700">
+                                    <td className="p-3"><Skeleton width={150} /></td>
+                                    <td className="py-3 px-6 text-sm"><Skeleton width={150} /></td>
+                                    <td className="py-3 px-6 text-sm"><Skeleton width={100} /></td>
+                                </tr>
+                            ))
+                        ) : eventData?.participants?.length === 0 ? (
                             <tr>
-                              <td colSpan={12} className="py-4 text-center">
-                                No Participants found.
-                              </td>
+                                <td colSpan={3} className="py-4 text-center">
+                                    No Participants found.
+                                </td>
                             </tr>
-                          ) :
-                            event.participants.map((participant) => (
+                        ) : (
+                            eventData?.participants?.map((participant) => (
                                 <tr key={participant._id} className="border-b dark:border-gray-700">
                                     <td className="py-3 px-6 text-sm">{participant._id || "N/A"}</td>
                                     <td className="py-3 px-6 text-sm">{participant.name || "N/A"}</td>
                                     <td className="py-3 px-6 text-sm">{participant.email || "N/A"}</td>
                                 </tr>
-                            ))}
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

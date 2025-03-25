@@ -7,15 +7,20 @@ const {
   updateEvent,
   deleteEvent,
   updateEventStatus,
-  getNewEvents,
-  getUpcomingEvents,
-  getFeaturedEvents,
-  getCategoryEvents,
   featureEvent,
   toggleRegistration,
   checkRegistrationStatus,
   getEventsByUser,
   getRegisteredEvents,
+  getPaginatedEvents,
+  getSimilarEvents,
+  checkInParticipant,
+  approveEvent,
+  sendEventNotification,
+  exportEvents,
+  getEventStats,
+  searchEvents,
+  getEventCategories,
 } = require("../controllers/eventController");
 const {
   authenticateUser,
@@ -23,12 +28,17 @@ const {
 } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
-
-router.get("/new", getNewEvents);
-router.get("/upcoming", getUpcomingEvents);
-router.get("/featured", getFeaturedEvents);
-router.get("/category/:category", getCategoryEvents);
 router.get("/", getAllEvents);
+router.get('/paginated', getPaginatedEvents);
+router.get('/categories', getEventCategories);
+router.get('/search', searchEvents);
+router.get('/stats', getEventStats);
+router.get('/export', exportEvents);
+router.post('/:id/notify', sendEventNotification);
+router.put('/:id/approve', approveEvent);
+router.post('/:eventId/checkin/:userId', checkInParticipant);
+router.get('/:id/similar', getSimilarEvents);
+
 router.get(
   "/user/events",
   authenticateUser,
@@ -50,6 +60,7 @@ router.post(
   upload,
   createEvent
 );
+
 
 router.put(
   "/:id",

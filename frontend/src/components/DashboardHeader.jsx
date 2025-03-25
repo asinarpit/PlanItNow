@@ -1,14 +1,21 @@
 import React, { useState } from "react";
-import { FiMail, FiBell, FiSearch, FiChevronDown, FiLogOut, FiUser } from "react-icons/fi";
+import { FiMail, FiBell, FiSearch, FiChevronDown, FiLogOut, FiUser, FiMenu } from "react-icons/fi";
 import ThemeToggle from "./ThemeToggle";
 import { useSelector, useDispatch } from "react-redux";
 import NotificationPopover from "./NotificationPopover";
 import { logout, removeDeviceToken } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+import { motion } from "framer-motion";
 
 
-const DashboardHeader = () => {
+const menuVariants = {
+    open: { rotate: 90 },
+    closed: { rotate: 0 },
+};
+
+
+const DashboardHeader = ({ onToggleSidebar, isSidebarOpen }) => {
     const { user } = useSelector(state => state.auth);
     const dispatch = useDispatch();
     const { notifications, loading } = useSelector(state => state.notifications);
@@ -36,6 +43,15 @@ const DashboardHeader = () => {
 
     return (
         <div className="flex items-center justify-between shadow-sm p-4 text-gray-800 bg-white dark:bg-gray-900 dark:text-gray-100 sticky top-0 z-50">
+            <motion.button
+                onClick={onToggleSidebar}
+                className="lg:hidden p-2 mr-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                variants={menuVariants}
+                animate={isSidebarOpen ? "open" : "closed"}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+                <FiMenu className="w-5 h-5" />
+            </motion.button>
             {/* Search */}
             <div className="hidden lg:flex items-center bg-gray-100 rounded-sm px-2 dark:bg-gray-800 border dark:border-gray-700">
                 <input
@@ -52,7 +68,7 @@ const DashboardHeader = () => {
             <div className="flex items-center gap-4">
                 {/* Icons */}
                 <div className="flex items-center gap-3">
-                    <FiMail className="w-5 h-5 cursor-pointer hover:text-teal-600" />
+                    {/* <FiMail className="w-5 h-5 cursor-pointer hover:text-teal-600" /> */}
                     <div
                         className="relative"
                         onMouseEnter={() => setShowPopover(true)}

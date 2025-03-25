@@ -202,14 +202,14 @@ const UserManagementPage = () => {
       <div className="container mx-auto">
         <h2 className="text-2xl font-bold text-center mb-6">Users</h2>
 
-        <div className="flex justify-between">
+        <div className="flex flex-wrap justify-between gap-4">
           <div className="mb-4">
             <input
               type="text"
               placeholder="Search by email or name"
               value={searchQuery}
               onChange={handleSearchChange}
-              className="border dark:border-gray-700 rounded px-4 py-2 w-50 bg-white dark:bg-gray-900 text-sm focus:ring-1 focus:ring-teal-600 focus:outline-none"
+              className="border dark:border-gray-700 rounded px-4 py-2 w-full max-w-50 bg-white dark:bg-gray-900 text-sm focus:ring-1 focus:ring-teal-600 focus:outline-none"
             />
           </div>
 

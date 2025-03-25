@@ -44,7 +44,7 @@ const NotificationToast = () => {
             ), {
                 duration: 5000, // Time to show the toast
                 style: {
-                    padding: "0px", // Adjust padding here if needed
+                    padding: "0px", 
                 },
             });
         });

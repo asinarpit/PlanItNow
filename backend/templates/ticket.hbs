@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 400px;
+      height: 600px;
+      background: #f0f0f0;
+      position: relative;
+    }
+    .header {
+      background-color: {{THEME_COLOR}};
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px 15px 0 0;
+    }
+    .content {
+      padding: 20px;
+    }
+    .event-title {
+      color: {{THEME_COLOR}};
+      text-align: center;
+      margin: 20px 0;
+    }
+    .detail-label {
+      color: {{THEME_COLOR}};
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    .qr-code {
+      display: block;
+      margin: 20px auto;
+      width: 200px;
+    }
+    .ticket-id {
+      text-align: center;
+      color: {{THEME_COLOR}};
+      position: absolute;
+      bottom: 30px;
+      width: 100%;
+    }
+    .border {
+      border: 2px solid {{THEME_COLOR}};
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      bottom: 0px;
+      border-radius: 15px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="border"></div>
+  <div class="header">
+    <h1 style="color: white;">{{company}}</h1>
+  </div>
+
+  <div class="content">
+    <h2 class="event-title">{{event.title}}</h2>
+    
+    <div class="detail-label">Attendee:</div>
+    <div>{{user.name}}</div>
+
+    <div class="detail-label">Date:</div>
+    <div>{{formatDate event.date}}</div>
+
+    <div class="detail-label">Time:</div>
+    <div>{{formatTime event.date}}</div>
+
+    <img class="qr-code" src="{{qrCode}}" alt="QR Code">
+
+    <div class="ticket-id">
+      Ticket ID: {{payment.paymentId}}
+    </div>
+  </div>
+</body>
+</html>

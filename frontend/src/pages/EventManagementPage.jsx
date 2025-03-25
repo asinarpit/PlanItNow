@@ -152,29 +152,25 @@ const EventManagementPage = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto">
         <h2 className="text-2xl font-bold text-center mb-6">Events</h2>
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex gap-5 justify-between items-center mb-4">
           {/* Search Box */}
           <input
             type="text"
             placeholder="Search events by title, description, location, category, or creator..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="border dark:border-gray-700 rounded px-4 py-2 w-[450px] bg-white dark:bg-gray-900 text-sm focus:ring-1 focus:ring-teal-600 focus:outline-none"
+            className="border dark:border-gray-700 rounded px-4 py-2 w-full max-w-[450px] bg-white dark:bg-gray-900 text-sm focus:ring-1 focus:ring-teal-600 focus:outline-none"
           />
           <button
             onClick={handleAddEvent}
-            className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 text-sm"
+            className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 text-sm whitespace-nowrap"
           >
             Add Event
           </button>
         </div>
 
-
-
-
-        <div className="max-w-[1200px] overflow-x-auto shadow-md rounded-lg">
+        <div className=" overflow-x-auto overflow-y-hidden shadow-md rounded-lg">
           <table className="min-w-full table-auto dark:bg-gray-900">
             <thead className="bg-teal-600 dark:bg-gray-900 text-gray-100 border-b dark:border-gray-700">
               <tr>
@@ -374,7 +370,7 @@ const EventManagementPage = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={closeDeleteModal}

@@ -5,6 +5,7 @@ import { ImSpinner8 } from "react-icons/im";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import Portal from "../components/Portal";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -16,6 +17,11 @@ const EventDetailPage = () => {
   const [isError, setIsError] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+
+  // Add payment status check
+  const isPaid = event?.registrationRequired && event?.registrationFee > 0;
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -24,7 +30,6 @@ const EventDetailPage = () => {
         setEvent(response.data);
         setIsRegistered(response.data.participants?.some(participant => participant._id === user.id));
       } catch (error) {
-        console.error("Error fetching event:", error);
         setIsError(true);
         toast.error("Failed to load event details.");
       } finally {
@@ -35,24 +40,91 @@ const EventDetailPage = () => {
     fetchEvent();
   }, [eventId, user]);
 
-  const handleToggleRegistration = async () => {
+  const handleToggleRegistration = () => {
     if (loading) return;
-    setLoading(true);
 
+    if (isRegistered) {
+      if (isPaid) {
+        setShowCancelModal(true);
+      } else {
+        handleCancelRegistration();
+      }
+    } else {
+      if (isPaid) {
+        setShowPaymentModal(true);
+      } else {
+        handleFreeRegistration();
+      }
+    }
+  };
+
+  const handleProceedToPayment = async () => {
+    setShowPaymentModal(false);
+    setLoading(true);
     try {
-      const response = await axios.post(
+      const response = await axios.get(
+        `${BASE_URL}/payment/pay?amount=${event.registrationFee}&eventId=${event._id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      window.location.href = response.data.redirectUrl;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Payment initialization failed");
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmCancel = async () => {
+    setShowCancelModal(false);
+    setLoading(true);
+    try {
+      await axios.post(
         `${BASE_URL}/events/${eventId}/register`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setIsRegistered((prev) => !prev);
-      toast.success(response.data.message);
+      setIsRegistered(false);
+      toast.success("Registration canceled successfully");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Registration update failed");
+      toast.error(error.response?.data?.message || "Cancellation failed");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleFreeRegistration = async () => {
+    setLoading(true);
+    try {
+      await axios.post(
+        `${BASE_URL}/events/${eventId}/register`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setIsRegistered(true);
+      toast.success("Registered successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelRegistration = async () => {
+    setLoading(true);
+    try {
+      await axios.post(
+        `${BASE_URL}/events/${eventId}/register`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setIsRegistered(false);
+      toast.success("Registration canceled successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Cancellation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -164,11 +236,6 @@ const EventDetailPage = () => {
                 <div>
                   <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Registration Fee</h3>
                   <p className="text-gray-600 dark:text-gray-400">${event.registrationFee}</p>
-                  {event.paymentLink && (
-                    <a href={event.paymentLink} className="mt-2 inline-flex items-center px-3 py-1.5 bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-100 rounded-full text-sm font-medium hover:bg-teal-200 transition-colors">
-                      <FaLink className="mr-2 text-sm" /> Complete Payment
-                    </a>
-                  )}
                 </div>
               </div>
             )}
@@ -190,6 +257,10 @@ const EventDetailPage = () => {
               <span className="inline-flex items-center">
                 <FaRegCalendarCheck className="mr-2" /> Registered ✓
               </span>
+            ) : isPaid ? (
+              <>
+                <span>Register for ₹{event.registrationFee}</span>
+              </>
             ) : (
               "Register Now"
             )}
@@ -267,6 +338,67 @@ const EventDetailPage = () => {
           </div>
         </section>
       )}
+
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <Portal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4 dark:text-white">Proceed to Payment</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                You will be redirected to the payment page to complete your registration.
+                Are you sure you want to proceed?
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleProceedToPayment}
+                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium"
+                >
+                  Proceed
+                </button>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* Cancellation Modal */}
+      {showCancelModal && (
+        <Portal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4 dark:text-white">Cancel Registration</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                {isPaid
+                  ? "Canceling your registration for this paid event will not result in a refund. Are you sure you want to proceed?"
+                  : "Are you sure you want to cancel your registration?"}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                >
+                  Go Back
+                </button>
+                <button
+                  onClick={isPaid ? handleConfirmCancel : handleCancelRegistration}
+                  className={`px-4 py-2 ${isPaid ? 'bg-red-600 hover:bg-red-700' : 'bg-teal-600 hover:bg-teal-700'} text-white rounded-lg font-medium`}
+                >
+                  Confirm Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
     </div>
   );
 };

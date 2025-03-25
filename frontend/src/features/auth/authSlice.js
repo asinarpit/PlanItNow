@@ -10,7 +10,6 @@ const initialState = {
     image: null,
     email: null,
     role: null,
-    deviceToken: null,
   },
   token: null,
   status: "idle",
@@ -33,12 +32,13 @@ export const loginUser = createAsyncThunk(
           image: response.data.image,
           email: response.data.email,
           role: response.data.role,
-          deviceToken,
         },
         token: response.data.token,
       };
     } catch (error) {
-      return rejectWithValue(error.response.data.message);
+      const errorMessage =
+        error.response?.data?.message || error.message || "Login failed";
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -60,7 +60,6 @@ export const signupUser = createAsyncThunk(
           name: response.data.name,
           email: response.data.email,
           role: response.data.role,
-          deviceToken,
         },
         token: response.data.token,
       };
@@ -97,7 +96,7 @@ export const removeDeviceToken = createAsyncThunk(
     try {
       const state = getState();
       const { token } = state.auth;
-      const { deviceToken } = state.auth.user;
+      const deviceToken = localStorage.getItem("deviceToken");
 
       if (!deviceToken) return;
 
@@ -130,20 +129,18 @@ const authSlice = createSlice({
       };
       state.token = null;
     },
-    setDeviceToken: (state, action) => {
-      state.user.deviceToken = action.payload;
-    },
+
     setCredentials: (state, action) => {
       const { user, token } = action.payload;
       state.user = { ...state.user, ...user };
       state.token = token;
     },
-    
   },
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = "succeeded";
@@ -152,7 +149,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload;
+        state.error = action.payload || "Login failed";
       })
       .addCase(signupUser.pending, (state) => {
         state.status = "loading";
@@ -186,5 +183,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setDeviceToken, setCredentials } = authSlice.actions;
+export const { logout, setCredentials } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const eventSchema = new mongoose.Schema(
   {
@@ -60,8 +61,7 @@ const eventSchema = new mongoose.Schema(
     // Registration Details
     registrationRequired: { type: Boolean, default: true },
     registrationDeadline: { type: Date },
-    registrationFee: { type: Number, default: 0 },
-    paymentLink: { type: String }, 
+    registrationFee: { type: Number, default: 0 },    
 
     // Social Media Links
     socialMedia: {
@@ -89,5 +89,7 @@ const eventSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+eventSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model("Event", eventSchema);

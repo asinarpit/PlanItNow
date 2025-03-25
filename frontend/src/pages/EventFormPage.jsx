@@ -5,13 +5,16 @@ import { createEvent, updateEvent } from "../features/event/eventsSlice";
 import { CgSpinner } from "react-icons/cg";
 import { toast } from "react-hot-toast";
 import { useDropzone } from "react-dropzone";
+import axios from "axios";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const EventFormPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { events } = useSelector((state) => state.events);
   const { eventId } = useParams();
-  const currentEvent = events?.find((event) => event._id === eventId);
+  const [currentEvent, setCurrentEvent] = useState(null);
+  const { token } = useSelector(state => state.auth);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -39,7 +42,6 @@ const EventFormPage = () => {
     registrationRequired: true,
     registrationDeadline: "",
     registrationFee: 0,
-    paymentLink: "",
     socialMedia: {
       facebook: "",
       instagram: "",
@@ -51,6 +53,28 @@ const EventFormPage = () => {
     status: "pending",
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchEvent = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${BASE_URL}/events/${eventId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setCurrentEvent(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching event:", error);
+        toast.error("Failed to load event data");
+        setLoading(false);
+      }
+    };
+
+    if (eventId) {
+      fetchEvent();
+    }
+
+  }, [eventId, token]);
 
   useEffect(() => {
     if (currentEvent) {
@@ -85,7 +109,6 @@ const EventFormPage = () => {
         registrationRequired: currentEvent.registrationRequired || true,
         registrationDeadline: currentEvent.registrationDeadline ? currentEvent.registrationDeadline.split("T")[0] : "",
         registrationFee: currentEvent.registrationFee || 0,
-        paymentLink: currentEvent.paymentLink || "",
         socialMedia: {
           facebook: currentEvent.socialMedia?.facebook || "",
           instagram: currentEvent.socialMedia?.instagram || "",
@@ -261,7 +284,7 @@ const EventFormPage = () => {
 
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-screen">
       <h2 className="text-2xl font-bold mb-4">
         {currentEvent ? "Edit Event" : "Create Event"}
       </h2>
@@ -595,17 +618,6 @@ const EventFormPage = () => {
               type="number"
               name="registrationFee"
               value={formData.registrationFee}
-              onChange={handleChange}
-              className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
-              disabled={loading}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2">Payment Link</label>
-            <input
-              type="url"
-              name="paymentLink"
-              value={formData.paymentLink}
               onChange={handleChange}
               className="w-full p-2 border dark:border-gray-700 rounded dark:bg-gray-800"
               disabled={loading}

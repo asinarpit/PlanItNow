@@ -1,4 +1,4 @@
-import React, { useEffect} from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import HomePage from "./pages/HomePage";
 import { Toaster } from "react-hot-toast";
@@ -8,7 +8,7 @@ import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import AboutPage from "./pages/AboutPage";
-import { setDeviceToken, logout } from "./features/auth/authSlice";
+import { logout } from "./features/auth/authSlice";
 import { useDispatch } from "react-redux";
 import { getDeviceToken } from "./utils/firebaseUtils";
 import NotificationToast from "./components/NotificationToast";
@@ -32,6 +32,12 @@ import MyProfile from "./pages/ProfilePage.jsx";
 import RegisteredEventsPage from "./pages/RegisteredEventsPage.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import GoogleCallback from "./pages/GoogleCallback.jsx";
+import PaymentComplete from "./pages/PaymentComplete.jsx";
+import EventsPage from "./pages/EventsPage.jsx";
+import PaymentsManagementPage from "./pages/PaymentsManagementPage.jsx";
+import FacultyPaymentsPage from "./pages/FacultyPaymentsPage.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 
 
 const App = () => {
@@ -44,12 +50,12 @@ const App = () => {
     const fetchDeviceToken = async () => {
       const token = await getDeviceToken();
       if (token) {
-        dispatch(setDeviceToken(token));
+        localStorage.setItem("deviceToken", token);
       }
     };
 
     fetchDeviceToken();
-  }, [dispatch]);
+  }, []);
 
   // to logout if status is 401 (token expiration)
   useEffect(() => {
@@ -76,7 +82,7 @@ const App = () => {
   return (
     <SkeletonTheme baseColor={baseColor} highlightColor={highlightColor}>
       <Router>
-      <ScrollToTop/>
+        <ScrollToTop />
         <Toaster position="top-right" toastOptions={{
           style: {
             background: theme === "dark" ? "#333" : "#fff",
@@ -92,8 +98,12 @@ const App = () => {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:eventId" element={<EventDetailPage />} />
             <Route path="/auth/google/callback" element={<GoogleCallback />} />
+            <Route path="/payment-complete" element={<PaymentComplete />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           </Route>
 
           {/* Protected Routes for Admin */}
@@ -102,16 +112,17 @@ const App = () => {
               <Route index element={<AdminDashboardOverviewPage />} />
               <Route path="events" element={<EventManagementPage />} />
               <Route path="users" element={<UserManagementPage />} />
-              <Route path="my-profile" element={<MyProfile/>}/>
+              <Route path="my-profile" element={<MyProfile />} />
               <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="payments" element={<PaymentsManagementPage />} />
 
               {/* Nested Routes for Event Management */}
               <Route path="events/feedback/:eventId" element={<FeedbacksPage />} />
               <Route path="events/participants/:eventId" element={<ParticipantsPage />} />
               <Route path="events/new" element={<EventFormPage />} />
               <Route path="events/edit/:eventId" element={<EventFormPage />} />
-              <Route path="events/:eventId" element={<AdminEventDetailPage/>}/>
-              
+              <Route path="events/:eventId" element={<AdminEventDetailPage />} />
+
             </Route>
           </Route>
 
@@ -125,7 +136,8 @@ const App = () => {
               <Route path="my-events/edit/:eventId" element={<EventFormPage />} />
               <Route path="my-events/participants/:eventId" element={<ParticipantsPage />} />
               <Route path="my-events/feedback/:eventId" element={<FeedbacksPage />} />
-              <Route path="my-profile" element={<MyProfile/>}/>
+              <Route path="my-profile" element={<MyProfile />} />
+              <Route path="payments" element={<FacultyPaymentsPage />} />
 
             </Route>
 
@@ -137,7 +149,7 @@ const App = () => {
               <Route index element={<StudentDashboardOverviewPage />} />
               <Route path="registered-events" element={<RegisteredEventsPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="my-profile" element={<MyProfile/>}/>
+              <Route path="my-profile" element={<MyProfile />} />
 
             </Route>
           </Route>

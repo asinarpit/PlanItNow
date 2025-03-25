@@ -5,6 +5,7 @@ import {
     markNotificationAsRead,
     markAllNotificationsAsRead,
 } from "../features/notification/notificationSlice";
+import Skeleton from "react-loading-skeleton";
 
 
 const NotificationsPage = () => {
@@ -65,38 +66,50 @@ const NotificationsPage = () => {
                 </div>
             )}
 
-            {loading ? (
-                <div className="text-center">Loading notifications...</div>
-            ) : filteredNotifications.length === 0 ? (
-                <div className="text-center">
-                    {activeTab === "unread" ? "No unread notifications." : "No read notifications."}
-                </div>
-            ) : (
-                <ul className="space-y-4">
-                    {filteredNotifications.map((notification) => (
-                        <li
-                            key={notification._id}
-                            className={`p-4 border dark:border-gray-700 rounded-lg ${notification.isRead ? "bg-gray-200 dark:bg-gray-950" : "bg-white"} dark:bg-gray-900 shadow-sm`}
-                        >
-                            <h2 className="font-semibold text-lg">{notification.title}</h2>
-                            <p className="mt-2">{notification.body}</p>
-                            <div className="flex justify-between items-center mt-4">
-                                <span className="text-sm">
-                                    {new Date(notification.createdAt).toLocaleString()}
-                                </span>
-                                {!notification.isRead && (
-                                    <button
-                                        onClick={() => handleMarkAsRead(notification._id)}
-                                        className="bg-teal-600 text-white text-sm py-1 px-3 rounded-sm hover:bg-teal-700 transition"
-                                    >
-                                        Mark as Read
-                                    </button>
-                                )}
+            {loading ?
+                (
+                    <>
+                        {[...Array(5)].map((_, index) => (
+                            <div className="bg-white dark:bg-gray-900 p-2 rounded-md mb-4 flex flex-col gap-2">
+                                <Skeleton width={"20%"} />
+                                <Skeleton width={"30%"} />
+                                <Skeleton width={"10%"} />
                             </div>
-                        </li>
-                    ))}
-                </ul>
-            )}
+
+                        ))}
+                    </>
+                )
+
+                : filteredNotifications.length === 0 ? (
+                    <div className="text-center">
+                        {activeTab === "unread" ? "No unread notifications." : "No read notifications."}
+                    </div>
+                ) : (
+                    <ul className="space-y-4">
+                        {filteredNotifications.map((notification) => (
+                            <li
+                                key={notification._id}
+                                className={`p-4 border dark:border-gray-700 rounded-lg ${notification.isRead ? "bg-gray-200 dark:bg-gray-950" : "bg-white"} dark:bg-gray-900 shadow-sm`}
+                            >
+                                <h2 className="font-semibold text-lg">{notification.title}</h2>
+                                <p className="mt-2">{notification.body}</p>
+                                <div className="flex justify-between items-center mt-4">
+                                    <span className="text-sm">
+                                        {new Date(notification.createdAt).toLocaleString()}
+                                    </span>
+                                    {!notification.isRead && (
+                                        <button
+                                            onClick={() => handleMarkAsRead(notification._id)}
+                                            className="bg-teal-600 text-white text-sm py-1 px-3 rounded-sm hover:bg-teal-700 transition"
+                                        >
+                                            Mark as Read
+                                        </button>
+                                    )}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
         </div>
     );
 };

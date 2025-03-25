@@ -50,13 +50,8 @@ const StudentDashboardOverviewPage = () => {
         });
 
         setOverview({
-          pastEvents: response.data.pastEvents,
-          pendingRegistrations: response.data.pendingRegistrations,
-          totalEventsParticipated: response.data.totalEventsParticipated,
-          upcomingEvents: response.data.upcomingEvents,
-          waitlistedCount: response.data.waitlistedCount,
-          totalFeesPaid: response.data.totalFeesPaid,
-          paidEventsCount: response.data.paidEventsCount,
+          ...response.data,
+          totalFeesPaid: response.data.totalFeesPaid || 0,
           eventsByCategory: response.data.eventsByCategory || [],
         });
       } catch (err) {
@@ -74,6 +69,7 @@ const StudentDashboardOverviewPage = () => {
   const eventParticipationData = [
     { name: "Past Events", value: overview.pastEvents },
     { name: "Upcoming Events", value: overview.upcomingEvents },
+    { name: "Waitlisted", value: overview.waitlistedCount },
   ];
 
   const eventsByCategoryData = overview.eventsByCategory.map((category) => ({
@@ -81,7 +77,7 @@ const StudentDashboardOverviewPage = () => {
     events: category.count,
   }));
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // Chart colors
+  const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"];
 
   if (loading)
     return (
@@ -90,7 +86,7 @@ const StudentDashboardOverviewPage = () => {
           {[...Array(6)].map((_, index) => (
             <div
               key={index}
-              className="p-4 rounded-lg shadow bg-white dark:bg-gray-800"
+              className="p-4 rounded-lg shadow bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
             >
               <Skeleton height={20} width="70%" />
               <Skeleton height={24} width="50%" className="mt-2" />
@@ -98,35 +94,29 @@ const StudentDashboardOverviewPage = () => {
           ))}
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          <Skeleton height={300} className="rounded-lg" />
-          <Skeleton height={300} className="rounded-lg" />
+          <Skeleton height={300} className="rounded-lg border border-gray-200 dark:border-gray-800" />
+          <Skeleton height={300} className="rounded-lg border border-gray-200 dark:border-gray-800" />
         </div>
       </div>
     );
 
-  if (error) return <p className="text-red-500 dark:text-red-400">{error}</p>;
+  if (error) return <p className="text-red-500 dark:text-red-400 p-6">{error}</p>;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Main Statistics Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <StatCard title="Past Events" value={overview.pastEvents} />
-        <StatCard
-          title="Pending Registrations"
-          value={overview.pendingRegistrations}
-        />
-        <StatCard
-          title="Total Events Participated"
-          value={overview.totalEventsParticipated}
-        />
+        <StatCard title="Total Participations" value={overview.totalEventsParticipated} />
         <StatCard title="Upcoming Events" value={overview.upcomingEvents} />
+        <StatCard title="Past Events" value={overview.pastEvents} />
+        <StatCard title="Pending Registrations" value={overview.pendingRegistrations} />
         <StatCard title="Waitlisted" value={overview.waitlistedCount} />
         <StatCard
           title="Total Fees Paid"
-          value={`₹${overview.totalFeesPaid.toLocaleString()}`}
+          value={`₹${overview.totalFeesPaid.toLocaleString('en-IN')}`}
         />
         <StatCard
-          title="Paid Events"
+          title="Successful Payments"
           value={overview.paidEventsCount}
         />
       </div>
@@ -134,7 +124,7 @@ const StudentDashboardOverviewPage = () => {
       {/* Charts Section */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Event Participation Pie Chart */}
-        <SectionCard title="Event Participation">
+        <SectionCard title="Event Distribution">
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -144,7 +134,6 @@ const StudentDashboardOverviewPage = () => {
                   cy="50%"
                   innerRadius={60}
                   outerRadius={100}
-                  fill="#8884d8"
                   paddingAngle={5}
                   dataKey="value"
                   label
@@ -156,7 +145,9 @@ const StudentDashboardOverviewPage = () => {
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  formatter={(value) => `${value} events`}
+                />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -172,7 +163,7 @@ const StudentDashboardOverviewPage = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="events" fill="#10B981" />
+                <Bar dataKey="events" fill="#3B82F6" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -181,31 +172,51 @@ const StudentDashboardOverviewPage = () => {
 
       {/* Additional Insights Section */}
       <div className="grid md:grid-cols-2 gap-6">
-        <SectionCard title="Financial Overview">
+        <SectionCard title="Financial Summary">
           <div className="grid grid-cols-2 gap-4">
             <StatCard
-              title="Total Fees Paid"
-              value={`₹${overview.totalFeesPaid.toLocaleString()}`}
+              title="Total Paid"
+              value={`₹${overview.totalFeesPaid.toLocaleString('en-IN')}`}
               small
             />
             <StatCard
-              title="Paid Events"
+              title="Transactions"
               value={overview.paidEventsCount}
               small
             />
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Event Insights">
-          <div className="grid grid-cols-2 gap-4">
             <StatCard
-              title="Upcoming Events"
-              value={overview.upcomingEvents}
+              title="Pending Registrations"
+              value={overview.pendingRegistrations}
               small
             />
             <StatCard
               title="Waitlisted"
               value={overview.waitlistedCount}
+              small
+            />
+          </div>
+        </SectionCard>
+
+        <SectionCard title="Event Breakdown">
+          <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              title="Upcoming"
+              value={overview.upcomingEvents}
+              small
+            />
+            <StatCard
+              title="Past Events"
+              value={overview.pastEvents}
+              small
+            />
+            <StatCard
+              title="Categories"
+              value={overview.eventsByCategory.length}
+              small
+            />
+            <StatCard
+              title="Total Participated"
+              value={overview.totalEventsParticipated}
               small
             />
           </div>
@@ -217,17 +228,22 @@ const StudentDashboardOverviewPage = () => {
 
 const StatCard = ({ title, value, small = false }) => (
   <div
-    className={`bg-teal-600 dark:bg-gray-900 text-gray-100 p-4 rounded-lg shadow ${small ? "py-3" : ""
-      }`}
+    className={`bg-white dark:bg-gray-900 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-800 ${
+      small ? "py-3" : ""
+    }`}
   >
-    <h3 className={`${small ? "text-sm" : "text-lg"} font-semibold`}>{title}</h3>
-    <p className={`${small ? "text-xl" : "text-2xl"} mt-1 font-bold`}>{value}</p>
+    <h3 className={`${small ? "text-sm" : "text-lg"} font-medium text-gray-600 dark:text-gray-300`}>
+      {title}
+    </h3>
+    <p className={`${small ? "text-xl" : "text-2xl"} mt-1 font-bold text-gray-900 dark:text-white`}>
+      {value}
+    </p>
   </div>
 );
 
 const SectionCard = ({ title, children }) => (
-  <div className="bg-white dark:bg-gray-950 p-6 rounded-lg shadow">
-    <h3 className="text-lg font-semibold mb-4 text-teal-600 dark:text-teal-400">
+  <div className="bg-white dark:bg-gray-950 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-800">
+    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
       {title}
     </h3>
     {children}

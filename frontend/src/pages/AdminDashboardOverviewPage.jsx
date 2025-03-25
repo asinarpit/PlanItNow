@@ -60,6 +60,8 @@ const AdminDashboardOverviewPage = () => {
           ...response.data,
           eventsByDepartment: response.data.eventsByDepartment || [],
           eventsByType: response.data.eventsByType || [],
+          // Format currency for display
+          totalRegistrationFees: response.data.totalRegistrationFees || 0,
         });
       } catch (err) {
         setError("Failed to fetch dashboard stats");
@@ -83,13 +85,13 @@ const AdminDashboardOverviewPage = () => {
     events: type.count,
   }));
 
-  const eventStatusData = [
+  const paymentStatusData = [
+    { name: "Paid", value: overview.paidEventsCount },
     { name: "Pending", value: overview.pendingEvents },
-    { name: "Approved", value: overview.approvedEvents },
-    { name: "Cancelled", value: overview.cancelledEvents },
+    { name: "Failed", value: overview.cancelledEvents },
   ];
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AF19FF"]; // Chart colors
+  const COLORS = ["#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#3B82F6"];
 
   if (loading)
     return (
@@ -98,7 +100,7 @@ const AdminDashboardOverviewPage = () => {
           {[...Array(8)].map((_, index) => (
             <div
               key={index}
-              className="p-4 rounded-lg shadow bg-white dark:bg-gray-800"
+              className="p-4 rounded-lg shadow bg-white dark:bg-gray-900"
             >
               <Skeleton height={20} width="70%" />
               <Skeleton height={24} width="50%" className="mt-2" />
@@ -115,7 +117,7 @@ const AdminDashboardOverviewPage = () => {
   if (error) return <p className="text-red-500 dark:text-red-400">{error}</p>;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Main Statistics Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <StatCard title="Total Events" value={overview.totalEvents} />
@@ -139,13 +141,13 @@ const AdminDashboardOverviewPage = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="events" fill="#10B981" />
+                <Bar dataKey="events" fill="#3B82F6" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </SectionCard>
 
-        {/* Event Type Pie Chart */}
+        {/* Event Type Distribution */}
         <SectionCard title="Events by Type">
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -156,7 +158,6 @@ const AdminDashboardOverviewPage = () => {
                   cy="50%"
                   innerRadius={60}
                   outerRadius={100}
-                  fill="#8884d8"
                   paddingAngle={5}
                   dataKey="events"
                   label
@@ -176,10 +177,20 @@ const AdminDashboardOverviewPage = () => {
         </SectionCard>
       </div>
 
-      {/* Additional Insights Section */}
+      {/* Payment Insights Section */}
       <div className="grid md:grid-cols-2 gap-6">
-        <SectionCard title="Event Insights">
+        <SectionCard title="Payment Insights">
           <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              title="Total Revenue"
+              value={`₹${overview.totalRegistrationFees.toLocaleString('en-IN')}`}
+              small
+            />
+            <StatCard
+              title="Successful Payments"
+              value={overview.paidEventsCount}
+              small
+            />
             <StatCard
               title="Virtual Events"
               value={overview.virtualEventsCount}
@@ -190,42 +201,33 @@ const AdminDashboardOverviewPage = () => {
               value={overview.waitlistedParticipants}
               small
             />
-            <StatCard
-              title="Total Fees"
-              value={`₹${overview.totalRegistrationFees.toLocaleString()}`}
-              small
-            />
-            <StatCard
-              title="Paid Events"
-              value={overview.paidEventsCount}
-              small
-            />
           </div>
         </SectionCard>
 
-        <SectionCard title="Event Status Distribution">
+        <SectionCard title="Payment Status Distribution">
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={eventStatusData}
+                  data={paymentStatusData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
                   outerRadius={100}
-                  fill="#8884d8"
                   paddingAngle={5}
                   dataKey="value"
                   label
                 >
-                  {eventStatusData.map((entry, index) => (
+                  {paymentStatusData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  formatter={(value) => `${value} transactions`}
+                />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -238,18 +240,22 @@ const AdminDashboardOverviewPage = () => {
 
 const StatCard = ({ title, value, small = false }) => (
   <div
-    className={`bg-teal-600 dark:bg-gray-900 text-gray-100 p-4 rounded-lg shadow ${
+    className={`bg-white dark:bg-gray-900 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-800 ${
       small ? "py-3" : ""
     }`}
   >
-    <h3 className={`${small ? "text-sm" : "text-lg"} font-semibold`}>{title}</h3>
-    <p className={`${small ? "text-xl" : "text-2xl"} mt-1 font-bold`}>{value}</p>
+    <h3 className={`${small ? "text-sm" : "text-sm sm:text-lg"} font-medium text-gray-600 dark:text-gray-300`}>
+      {title}
+    </h3>
+    <p className={`${small ? "text-xl" : "text-2xl"} mt-1 font-bold text-gray-900 dark:text-white`}>
+      {value}
+    </p>
   </div>
 );
 
 const SectionCard = ({ title, children }) => (
-  <div className="bg-white dark:bg-gray-950 p-6 rounded-lg shadow">
-    <h3 className="text-lg font-semibold mb-4 text-teal-600 dark:text-teal-400">
+  <div className="bg-white dark:bg-gray-950 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-800">
+    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
       {title}
     </h3>
     {children}

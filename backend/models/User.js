@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema(
       default: "student",
     },
     eventsParticipated: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
+    resetPasswordToken: String,
+    resetPasswordExpire: Number,
     deviceTokens: [{ type: String }],
   },
   { timestamps: true }

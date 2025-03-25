@@ -1,5 +1,8 @@
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
+const crypto = require("crypto");
+const { sendPasswordResetEmail } = require("../utils/nodemailer");
+
 
 const updateDeviceToken = async (req, res) => {
   const { deviceToken } = req.body;
@@ -90,8 +93,78 @@ const login = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(200).json({ 
+        message: "If your email is registered, you will receive a password reset link." 
+      });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({ 
+        message: "Account uses social login. Please sign in with Google." 
+      });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpire = Date.now() + 30 * 60 * 1000; 
+    await user.save();
+
+    const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+
+    console.log('Password reset URL:', resetUrl);
+
+ await sendPasswordResetEmail(user.email, user, resetUrl);
+    res.status(200).json({ 
+      message: "Password reset link sent to your email." 
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  try {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   signup,
   login,
   updateDeviceToken,
+  forgotPassword,
+  resetPassword
 };
