@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router";
 import { useSelector } from "react-redux";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const FeedbacksPage = () => {
   const { eventId } = useParams();
@@ -14,7 +15,7 @@ const FeedbacksPage = () => {
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/feedback/event/${eventId}`, {
+        const response = await axios.get(`${BASE_URL}/feedback/event/${eventId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

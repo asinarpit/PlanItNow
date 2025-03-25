@@ -84,7 +84,7 @@ const FacultyDashboardOverviewPage = () => {
 
   if (loading)
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {[...Array(8)].map((_, index) => (
             <div
@@ -106,7 +106,7 @@ const FacultyDashboardOverviewPage = () => {
   if (error) return <p className="text-red-500 dark:text-red-400 p-6">{error}</p>;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Main Statistics Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <StatCard title="Total Events" value={overview.totalEventsCreated} />

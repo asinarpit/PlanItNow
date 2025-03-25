@@ -94,7 +94,7 @@ exports.handlePaymentValidation = async (req, res) => {
         { $addToSet: { participants: payment.user._id } }
       );
     }
-    const redirectUrl = `http://localhost:5173/payment-complete?transactionId=${merchantTransactionId}&status=${paymentStatus}`;
+    const redirectUrl = `${process.env.FRONTEND_BASE_URL}/payment-complete?transactionId=${merchantTransactionId}&status=${paymentStatus}`;
     res.redirect(redirectUrl);
 
     // ticket, invoice and email generation.

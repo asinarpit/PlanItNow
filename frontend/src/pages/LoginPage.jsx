@@ -7,6 +7,8 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FcGoogle } from "react-icons/fc";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -132,7 +134,7 @@ const LoginPage = () => {
         </form>
 
         <button
-          onClick={() => (window.location.href = "http://localhost:5000/api/auth/google")}
+          onClick={() => (window.location.href = `${BASE_URL}/auth/google`)}
           className="w-full p-2 mt-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md flex items-center justify-center gap-2"
         >
           <FcGoogle className="w-5 h-5" />
