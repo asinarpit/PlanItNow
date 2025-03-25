@@ -6,6 +6,8 @@ import { useNavigate } from "react-router";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FcGoogle } from "react-icons/fc";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const SignupPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -81,6 +83,10 @@ const SignupPage = () => {
       });
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = `${BASE_URL}/auth/google`;
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
@@ -140,8 +146,8 @@ const SignupPage = () => {
           </div>
           {passwordMatchError && <p className="text-red-500 text-sm mb-2">{passwordMatchError}</p>}
 
-           {/* Role Selection */}
-           <select
+          {/* Role Selection */}
+          <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
             className="w-full p-2 mb-4 border rounded-md  bg-gray-100 dark:bg-gray-900"
@@ -157,6 +163,19 @@ const SignupPage = () => {
           >
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
+
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full p-2 mt-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md flex items-center justify-center gap-2"
+          >
+            <FcGoogle className="w-5 h-5" />
+            <span>Continue with Google</span>
+          </button>
+
+          <p className="mt-4 text-center">
+            Already have an account?{" "}
+            <a href="/login" className="text-blue-500">Login</a>
+          </p>
         </form>
       </div>
     </div>
