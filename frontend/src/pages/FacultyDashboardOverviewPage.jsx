@@ -236,7 +236,7 @@ const StatCard = ({ title, value, small = false }) => (
       small ? "py-3" : ""
     }`}
   >
-    <h3 className={`${small ? "text-sm" : "text-lg"} font-medium text-gray-600 dark:text-gray-300`}>
+    <h3 className={`${small ? "text-sm" : " text-sm lg:text-lg"} font-medium text-gray-600 dark:text-gray-300`}>
       {title}
     </h3>
     <p className={`${small ? "text-xl" : "text-2xl"} mt-1 font-bold text-gray-900 dark:text-white`}>

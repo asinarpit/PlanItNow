@@ -42,6 +42,7 @@ const sendNotificationToUsers = async (req, res) => {
       body,
       type: "selected",
       recipients: users.map((user) => user._id),
+      sender: req.user.id
     });
 
     return res.status(200).json({
@@ -83,6 +84,7 @@ const sendNotificationToAllUsers = async (req, res) => {
       body,
       type: "all",
       recipients: users.map((user) => user._id),
+      sender: req.user.id
     });
 
     return res
@@ -105,6 +107,7 @@ const getNotificationsForUser = async (req, res) => {
       recipients: userId,
     })
       .select("title body createdAt readBy")
+      .populate("sender", "name email image")
       .sort({ createdAt: -1 });
 
     const modifiedNotifications = notifications.map((notification) => {

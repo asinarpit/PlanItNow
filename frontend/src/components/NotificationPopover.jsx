@@ -14,7 +14,7 @@ const NotificationPopover = ({ notifications, loading, onClose }) => {
     }
 
     return (
-        <div className="absolute right-0 mt-0 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute  -right-24 lg:right-0 z-50  mt-0 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div className="flex items-center justify-between px-4 py-2 bg-teal-600 text-white">
                 <h2 className="text-sm font-semibold">Notifications</h2>
                 <span className="text-xs">{notifications.length} new</span>
@@ -43,8 +43,8 @@ const NotificationPopover = ({ notifications, loading, onClose }) => {
                             key={index}
                             className="flex items-start gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                         >
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700">
-                                <span>{notification.icon}</span>
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden">
+                                <img src={notification.sender?.image || "https://cdn-icons-png.flaticon.com/128/11820/11820201.png"} className="w-full h-full object-cover"/>
                             </div>
                             <div className="flex-grow">
                                 <div className="flex justify-between items-center w-full">

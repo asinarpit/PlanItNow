@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FiMail, FiBell, FiSearch, FiChevronDown, FiLogOut, FiUser, FiMenu } from "react-icons/fi";
 import ThemeToggle from "./ThemeToggle";
 import { useSelector, useDispatch } from "react-redux";

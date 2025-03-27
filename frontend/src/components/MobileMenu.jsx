@@ -116,7 +116,7 @@ const MobileMenu = ({ isOpen, setIsOpen, user, handleLogout, dashboardLink }) =>
                         animate={{ opacity: 1 }}
                         className="flex items-center gap-3 mb-6 p-3 bg-teal-600 dark:bg-teal-900 rounded-xl"
                     >
-                        <div className="w-12 h-12 bg-teal-600 text-white rounded-full flex justify-center items-center">
+                        <div className="w-12 h-12 overflow-hidden bg-teal-600 text-white rounded-full flex justify-center items-center">
                             {user.image ? <img src={user.image} className="w-full h-hull object-cover" /> : <FiUser className="w-5 h-5" />}
 
                         </div>

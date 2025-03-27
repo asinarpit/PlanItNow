@@ -7,6 +7,7 @@ const notificationSchema = new mongoose.Schema(
     type: { type: String, enum: ["selected", "all"], required: true },
     recipients: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }
 );

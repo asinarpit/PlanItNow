@@ -4,6 +4,7 @@ import EventList from "../components/EventList";
 
 
 
+
 const HomePage = () => {
   return (
     <div className="min-h-screen">

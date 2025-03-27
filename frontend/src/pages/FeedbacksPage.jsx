@@ -36,7 +36,7 @@ const FeedbacksPage = () => {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="p-6">
+    <div >
       <button
         onClick={() => navigate(-1)}
        className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 text-sm mb-4"
