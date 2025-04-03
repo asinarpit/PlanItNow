@@ -136,7 +136,6 @@ const PaymentsManagementPage = () => {
                       </p>
                     </th>
                   ))}
-                  <th className="py-3 px-6 text-sm font-medium">Payment Link</th>
                   <th className="py-3 px-6 text-sm font-medium">Actions</th>
                 </tr>
               </thead>
@@ -204,16 +203,6 @@ const PaymentsManagementPage = () => {
                       <td className="py-3 px-6 text-sm">{payment.provider}</td>
                       <td className="py-3 px-6 text-sm">
                         {new Date(payment.timestamp).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-6 text-sm">
-                        <a
-                          href={payment.paymentLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-teal-600 hover:underline"
-                        >
-                          View Link
-                        </a>
                       </td>
                       <td className="py-3 px-6 text-sm">
                         <button className="text-red-600 hover:text-red-700">

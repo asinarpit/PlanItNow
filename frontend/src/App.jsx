@@ -38,6 +38,7 @@ import PaymentsManagementPage from "./pages/PaymentsManagementPage.jsx";
 import FacultyPaymentsPage from "./pages/FacultyPaymentsPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
+import Chat from "./components/Chat.jsx";
 
 
 const App = () => {
@@ -104,6 +105,7 @@ const App = () => {
             <Route path="/payment-complete" element={<PaymentComplete />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/discussions" element={<Chat/>}/>
           </Route>
 
           {/* Protected Routes for Admin */}
@@ -156,8 +158,6 @@ const App = () => {
         </Routes>
       </Router>
     </SkeletonTheme>
-
-
   );
 };
 

@@ -10,6 +10,7 @@ import {
     FiUser,
     FiLogOut,
     FiArrowRight,
+    FiMessageCircle,
 } from "react-icons/fi";
 import Portal from "./Portal";
 import ThemeToggle from "./ThemeToggle";
@@ -151,12 +152,20 @@ const MobileMenu = ({ isOpen, setIsOpen, user, handleLogout, dashboardLink }) =>
                         onClick={() => setIsOpen(false)}
                     />
                     {user?.id && (
+                        <>
                         <MobileLink
                             to={dashboardLink}
                             text="Dashboard"
                             icon={<FiLayout />}
                             onClick={() => setIsOpen(false)}
                         />
+                        <MobileLink
+                            to={"/discussions"}
+                            text="Discussions"
+                            icon={<FiMessageCircle/>}
+                            onClick={() => setIsOpen(false)}
+                        />
+                        </>
                     )}
                 </motion.div>
 

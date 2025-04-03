@@ -4,7 +4,6 @@ import EventList from "../components/EventList";
 
 
 
-
 const HomePage = () => {
   return (
     <div className="min-h-screen">
@@ -34,6 +33,7 @@ const HomePage = () => {
           viewAllLink="/events?upcoming=true"
         />
       </div>
+      
     </div>
   );
 };

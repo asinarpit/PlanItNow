@@ -5,7 +5,7 @@ import { logout, removeDeviceToken } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
 import ThemeToggle from "./ThemeToggle";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu } from "react-icons/fi";
+import { FiMenu, FiMessageCircle } from "react-icons/fi";
 import MobileMenu from "./MobileMenu";
 
 const navLinks = [
@@ -63,11 +63,10 @@ const Navbar = () => {
               {({ isActive }) => (
                 <>
                   <motion.span
-                    className={`relative z-10 ${
-                      isActive
+                    className={`relative z-10 ${isActive
                         ? "text-teal-600 font-semibold"
                         : "text-gray-600 dark:text-gray-300 hover:text-teal-600"
-                    }`}
+                      }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -93,11 +92,10 @@ const Navbar = () => {
               {({ isActive }) => (
                 <>
                   <motion.span
-                    className={`relative z-10 ${
-                      isActive
+                    className={`relative z-10 ${isActive
                         ? "text-teal-600 font-semibold"
                         : "text-gray-600 dark:text-gray-300 hover:text-teal-600"
-                    }`}
+                      }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -118,7 +116,23 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4 ml-4">
+          {
+            user?.id && (
+              <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link
+                to="/discussions"
+                className="p-2 text-gray-600 dark:text-gray-300 hover:text-teal-600 relative"
+              >
+                <FiMessageCircle className="w-6 h-6" />
+              </Link>
+            </motion.div>
+            )
+          }
           <ThemeToggle />
+          
           {user?.id ? (
             <motion.button
               onClick={handleLogout}
